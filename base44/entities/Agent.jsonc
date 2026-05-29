@@ -1,0 +1,83 @@
+{
+  "name": "Agent",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Agent name"
+    },
+    "role": {
+      "type": "string",
+      "description": "Agent role/title"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "busy",
+        "offline"
+      ],
+      "default": "online"
+    },
+    "current_task": {
+      "type": "string",
+      "description": "What the agent is currently doing"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "low"
+    },
+    "last_activity": {
+      "type": "string",
+      "description": "Last activity description"
+    },
+    "personality": {
+      "type": "string",
+      "description": "Agent personality description"
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of skills"
+    },
+    "operating_principles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Core operating principles"
+    },
+    "age": {
+      "type": "string"
+    },
+    "gender": {
+      "type": "string"
+    },
+    "dress_code": {
+      "type": "string"
+    },
+    "automation": {
+      "type": "string",
+      "description": "Automation settings/notes"
+    },
+    "memory": {
+      "type": "string",
+      "description": "Memory logs/notes"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL to agent headshot"
+    }
+  },
+  "required": [
+    "name",
+    "role"
+  ]
+}

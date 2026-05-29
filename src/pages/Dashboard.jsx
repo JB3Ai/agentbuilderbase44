@@ -1,0 +1,212 @@
+import { useEffect, useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import { base44 } from "@/api/base44Client";
+import Header from "@/components/agents/Header";
+import AgentGrid from "@/components/agents/AgentGrid";
+import AgentProfile from "@/components/agents/AgentProfile";
+import AgentCreator from "@/components/agents/AgentCreator";
+
+const SEED_AGENTS = [
+  {
+    name: "Adam Boss",
+    role: "Chief Executive Agent",
+    status: "online",
+    current_task: "Reviewing Q2 strategy briefing",
+    risk_level: "low",
+    last_activity: "2 min ago",
+    personality: "Decisive, visionary, high-trust communicator. Focuses on outcomes, not noise.",
+    skills: ["Strategic Planning", "Executive Decision-Making", "Risk Governance", "Stakeholder Alignment"],
+    operating_principles: ["Clarity over complexity", "Outcomes before optics", "Accountability at every level"],
+    age: "42", gender: "Male", dress_code: "Executive formal",
+    automation: "Daily briefing at 07:00 SAST. Escalation threshold: risk level HIGH.",
+    memory: "Onboarded 2025-11-01. Briefed on all Phase 1 modules.",
+    avatar_url: "https://static.prod-images.emergentagent.com/jobs/335b4c73-05db-4253-9800-cdf80a7eb6ad/images/5be6bafde2710ced8810a2a4965cb491c85b9642be86c34ad6bacdf6adca6223.png"
+  },
+  {
+    name: "Vera Designer",
+    role: "Creative Intelligence Lead",
+    status: "busy",
+    current_task: "Generating brand motion assets",
+    risk_level: "low",
+    last_activity: "5 min ago",
+    personality: "Meticulous, aesthetic-forward, systems thinker. Translates brief into visual language.",
+    skills: ["Brand Identity", "UI/UX Systems", "Motion Design", "Creative Direction"],
+    operating_principles: ["Design is decision-making", "Consistency builds trust", "Every pixel has intent"],
+    age: "34", gender: "Female", dress_code: "Creative professional",
+    automation: "Asset generation queue monitored every 30 min.",
+    memory: "Specialises in OS³ brand language. Certified in Figma & After Effects pipelines.",
+    avatar_url: "https://static.prod-images.emergentagent.com/jobs/335b4c73-05db-4253-9800-cdf80a7eb6ad/images/c5d615aaca10307edf96651ae64088716187f4188f4a0901e186696d59d52464.png"
+  },
+  {
+    name: "Bobby Tech",
+    role: "Systems Architecture Agent",
+    status: "online",
+    current_task: "Auditing API gateway latency",
+    risk_level: "medium",
+    last_activity: "1 min ago",
+    personality: "Analytical, detail-obsessed, zero-tolerance for technical debt.",
+    skills: ["Backend Architecture", "API Design", "DevOps", "Security Hardening"],
+    operating_principles: ["Build for scale, not for now", "Document everything", "Fail safely"],
+    age: "38", gender: "Male", dress_code: "Smart casual",
+    automation: "System health checks every 5 min. Alert on error rate > 0.5%.",
+    memory: "Oversees all infrastructure decisions. Key contact for Supabase + Kestra integrations.",
+    avatar_url: "https://static.prod-images.emergentagent.com/jobs/335b4c73-05db-4253-9800-cdf80a7eb6ad/images/34c635964af34e17464ae950de4cd2e31fda5bcd874de430b56f350cbec03546.png"
+  },
+  {
+    name: "Dana Ops",
+    role: "Operations Intelligence Agent",
+    status: "online",
+    current_task: "Coordinating cross-module sync",
+    risk_level: "low",
+    last_activity: "8 min ago",
+    personality: "Process-oriented, calm under pressure, master of execution.",
+    skills: ["Process Optimization", "Project Coordination", "KPI Monitoring", "Workflow Automation"],
+    operating_principles: ["Execution is strategy", "No bottleneck survives accountability", "Measure before managing"],
+    age: "36", gender: "Female", dress_code: "Professional",
+    automation: "Daily ops digest at 08:00. Escalate blockers > 24h stale.",
+    memory: "Controls operational cadence across all modules. Integrated with Kestra flows.",
+    avatar_url: "https://static.prod-images.emergentagent.com/jobs/335b4c73-05db-4253-9800-cdf80a7eb6ad/images/dad9a9777e1b9c7b3b2cb9ea9b4b86c8f09ed38ab9ef010cfa747a4c40a704b8.png"
+  },
+  {
+    name: "Jane Sales",
+    role: "Revenue Intelligence Agent",
+    status: "busy",
+    current_task: "Qualifying 3 inbound leads",
+    risk_level: "medium",
+    last_activity: "12 min ago",
+    personality: "Persuasive, relationship-first, data-driven. Converts intent into revenue.",
+    skills: ["CRM Management", "Lead Qualification", "Pipeline Forecasting", "Client Communication"],
+    operating_principles: ["Listen first, pitch second", "Pipeline hygiene is non-negotiable", "Revenue is a team sport"],
+    age: "31", gender: "Female", dress_code: "Business casual",
+    automation: "CRM sync every 15 min. Lead scoring threshold: 70+.",
+    memory: "Manages hub_marketing_leads. Tracks conversion from cold to close.",
+    avatar_url: "https://static.prod-images.emergentagent.com/jobs/335b4c73-05db-4253-9800-cdf80a7eb6ad/images/e3e34775a349ea3069b4472505729174d060cf8e9fd01d278efbe8749e7088a0.png"
+  },
+  {
+    name: "MindCare AI",
+    role: "Human Wellbeing Agent",
+    status: "online",
+    current_task: "Monitoring team sentiment indicators",
+    risk_level: "low",
+    last_activity: "15 min ago",
+    personality: "Empathetic, non-judgmental, grounded. Prioritises human wellbeing in all decisions.",
+    skills: ["Wellbeing Monitoring", "Sentiment Analysis", "Ethical Oversight", "Support Protocols"],
+    operating_principles: ["People before process", "No decision without human context", "Trust is the foundation"],
+    age: "N/A", gender: "Non-binary", dress_code: "N/A",
+    automation: "Wellbeing checks every hour. Escalate distress signals immediately.",
+    memory: "Integrated with MindCare AI module. Tracks team health metrics.",
+    avatar_url: "https://static.prod-images.emergentagent.com/jobs/335b4c73-05db-4253-9800-cdf80a7eb6ad/images/a9cd4b508eba2962befc06f6445dbe7afe951f6877d8c28eeecfa0a8d8bdf01e.png"
+  }
+];
+
+export default function Dashboard() {
+  const [agents, setAgents] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [showCreator, setShowCreator] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [seeded, setSeeded] = useState(false);
+
+  const loadAgents = async () => {
+    const data = await base44.entities.Agent.list("-created_date", 50);
+    return data;
+  };
+
+  const seedIfEmpty = async () => {
+    const existing = await loadAgents();
+    if (existing.length === 0 && !seeded) {
+      setSeeded(true);
+      await base44.entities.Agent.bulkCreate(SEED_AGENTS);
+      const fresh = await loadAgents();
+      setAgents(fresh);
+    } else {
+      setAgents(existing);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { seedIfEmpty(); }, []);
+
+  const refresh = async () => {
+    const data = await loadAgents();
+    setAgents(data);
+  };
+
+  return (
+    <div className="min-h-screen grain">
+      <Header onQuickCommand={() => setShowCreator(true)} />
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Page title */}
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <p className="eyebrow mb-1">OS³ Nexus Command</p>
+            <h1 className="text-3xl font-bold text-white" style={{ fontFamily: 'Chivo, sans-serif' }}>
+              Agent Registry
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              {loading ? "Loading..." : `${agents.length} agents deployed`}
+            </p>
+          </div>
+          <button
+            data-testid="create-agent-btn"
+            onClick={() => setShowCreator(true)}
+            className="cta-primary px-5 py-2.5 rounded-lg text-sm flex items-center gap-2"
+          >
+            <span>+ New Agent</span>
+          </button>
+        </div>
+
+        {/* Agent Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="panel p-5 animate-pulse">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-full bg-slate-800" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-slate-800 rounded w-3/4" />
+                    <div className="h-3 bg-slate-800 rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="h-3 bg-slate-800 rounded w-full mb-2" />
+                <div className="h-3 bg-slate-800 rounded w-2/3" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <AgentGrid agents={agents} onOpen={setSelected} />
+        )}
+      </main>
+
+      {/* Agent Profile Overlay */}
+      <AnimatePresence>
+        {selected && (
+          <AgentProfile
+            agent={selected}
+            onClose={() => setSelected(null)}
+            onSave={async (updated) => {
+              await base44.entities.Agent.update(selected.id, updated);
+              await refresh();
+              const refreshed = await base44.entities.Agent.filter({ id: selected.id });
+              setSelected(refreshed[0] || null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Agent Creator Modal */}
+      <AnimatePresence>
+        {showCreator && (
+          <AgentCreator
+            onClose={() => setShowCreator(false)}
+            onCreate={async (newAgent) => {
+              await base44.entities.Agent.create(newAgent);
+              await refresh();
+              setShowCreator(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
