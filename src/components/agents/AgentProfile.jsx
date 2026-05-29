@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Save, RefreshCcw, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CouncilChat from "./CouncilChat";
+import AgentChat from "./AgentChat";
 
 const Field = ({ label, value, onChange, multiline }) => (
   <div>
@@ -100,14 +101,18 @@ export default function AgentProfile({ agent, onClose, onSave }) {
 
         {/* Tabs */}
         <div className="flex border-b border-[#20242C] px-6">
-          {["profile", "council"].map((tab) => (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`px-4 py-3 text-sm font-medium capitalize transition-colors border-b-2 ${
-                activeTab === tab
+          {[
+            { key: "profile", label: "Profile" },
+            { key: "chat", label: "Live Chat" },
+            { key: "council", label: "Council" },
+          ].map((tab) => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                activeTab === tab.key
                   ? "border-[#00FF66] text-[#00FF66]"
                   : "border-transparent text-slate-500 hover:text-slate-300"
               }`}>
-              {tab === "council" ? "Council Chat" : "Profile"}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -224,6 +229,15 @@ export default function AgentProfile({ agent, onClose, onSave }) {
                 }}
               />
             </div>
+          </div>
+        )}
+
+        {activeTab === "chat" && (
+          <div className="p-6">
+            <AgentChat
+              agentName={agent.name}
+              agentAvatar={agent.avatar_url}
+            />
           </div>
         )}
 
