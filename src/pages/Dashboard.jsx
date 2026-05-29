@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import Header from "@/components/agents/Header";
+import SettingsPanel from "@/components/agents/SettingsPanel";
 import AgentDiagramCard from "@/components/agents/AgentDiagramCard";
 import AgentProfile from "@/components/agents/AgentProfile";
 import AgentCreator from "@/components/agents/AgentCreator";
@@ -105,6 +106,7 @@ export default function Dashboard() {
   const [agents, setAgents] = useState([]);
   const [selected, setSelected] = useState(null);
   const [showCreator, setShowCreator] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
   const [seeded, setSeeded] = useState(false);
 
@@ -138,7 +140,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <Header onQuickCommand={() => setShowCreator(true)} />
+      <Header onQuickCommand={() => setShowCreator(true)} onOpenSettings={() => setShowSettings(true)} />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
 
@@ -180,18 +182,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Weekly Review Reminders */}
-        <div className="mb-8">
-          <WeeklyReviewPanel agents={agents} />
-        </div>
-
-        {/* Dependency Graph */}
-        {!loading && agents.length > 0 && (
-          <div className="mb-8">
-            <DependencyGraph agents={agents} />
-          </div>
-        )}
-
         {/* Agent Diagram Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -210,12 +200,24 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
             {agents.map((agent) => (
               <AgentDiagramCard key={agent.id} agent={agent} onOpen={setSelected} />
             ))}
           </div>
         )}
+
+        {/* Dependency Graph */}
+        {!loading && agents.length > 0 && (
+          <div className="mb-10">
+            <DependencyGraph agents={agents} />
+          </div>
+        )}
+
+        {/* Weekly Review Reminders */}
+        <div className="mb-8">
+          <WeeklyReviewPanel agents={agents} />
+        </div>
       </main>
 
       {/* Agent Profile Overlay */}
@@ -231,6 +233,13 @@ export default function Dashboard() {
               setSelected(refreshed[0] || null);
             }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Settings Panel */}
+      <AnimatePresence>
+        {showSettings && (
+          <SettingsPanel onClose={() => setShowSettings(false)} />
         )}
       </AnimatePresence>
 

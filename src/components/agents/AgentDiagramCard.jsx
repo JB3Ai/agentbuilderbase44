@@ -1,9 +1,64 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Zap, Brain, Shield, Settings, BookOpen } from "lucide-react";
+import { ChevronDown, ChevronUp, Zap, Brain, Settings } from "lucide-react";
 
 const statusColors = { online: "#00FF66", busy: "#F59E0B", offline: "#64748B" };
 const riskColors = { low: "risk-low", medium: "risk-medium", high: "risk-high" };
+
+// Parse last_activity strings like "2 min ago", "3 days ago", "1 week ago" into days
+function parseDaysIdle(lastActivity) {
+  if (!lastActivity) return 99;
+  const s = lastActivity.toLowerCase();
+  const num = parseInt(s);
+  if (isNaN(num)) return 0;
+  if (s.includes("day")) return num;
+  if (s.includes("week")) return num * 7;
+  if (s.includes("month")) return num * 30;
+  return 0; // minutes/hours = active
+}
+
+function WorkloadIndicator({ agent }) {
+  const daysIdle = parseDaysIdle(agent.last_activity);
+  const hasTask = !!agent.current_task;
+  const idleWarning = daysIdle >= 3;
+
+  // Determine workload level
+  let level, label, color, pulse;
+  if (agent.status === "busy" || (hasTask && daysIdle < 1)) {
+    level = "high"; label = "High"; color = "#F59E0B"; pulse = false;
+  } else if (hasTask && daysIdle < 3) {
+    level = "moderate"; label = "Active"; color = "#00FF66"; pulse = false;
+  } else if (idleWarning) {
+    level = "idle"; label = `Idle ${daysIdle}d`; color = "#EF4444"; pulse = true;
+  } else {
+    level = "low"; label = "Low"; color = "#475569"; pulse = false;
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 mt-1.5">
+      <div className="relative flex-shrink-0">
+        <div
+          className={pulse ? "animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" : ""}
+          style={{ background: pulse ? color : "transparent" }}
+        />
+        <div className="relative rounded-full"
+          style={{
+            width: 7, height: 7,
+            background: color,
+            boxShadow: pulse ? `0 0 8px ${color}` : level !== "low" ? `0 0 6px ${color}55` : "none"
+          }} />
+      </div>
+      <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 10, color, letterSpacing: "0.08em" }}>
+        {label}
+      </span>
+      {pulse && (
+        <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 9, color: "#EF4444", opacity: 0.7 }}>
+          · no task {daysIdle >= 3 && daysIdle < 5 ? "3–5d" : `${daysIdle}d`}
+        </span>
+      )}
+    </div>
+  );
+}
 
 function FieldRow({ label, value }) {
   if (!value) return null;
@@ -61,9 +116,12 @@ export default function AgentDiagramCard({ agent, onOpen }) {
                   style={{ fontFamily: "Chivo, sans-serif" }}>{agent.name}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{agent.role}</p>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className={riskColors[agent.risk_level] || "risk-low"}>{agent.risk_level || "low"}</span>
-                {expanded ? <ChevronUp className="w-4 h-4 text-slate-600" /> : <ChevronDown className="w-4 h-4 text-slate-600" />}
+              <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className={riskColors[agent.risk_level] || "risk-low"}>{agent.risk_level || "low"}</span>
+                  {expanded ? <ChevronUp className="w-4 h-4 text-slate-600" /> : <ChevronDown className="w-4 h-4 text-slate-600" />}
+                </div>
+                <WorkloadIndicator agent={agent} />
               </div>
             </div>
 

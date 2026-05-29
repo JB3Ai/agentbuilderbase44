@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Command, Zap, Github } from "lucide-react";
+import { Command, Zap, Github, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export default function Header({ onQuickCommand }) {
+export default function Header({ onQuickCommand, onOpenSettings }) {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -46,6 +46,13 @@ export default function Header({ onQuickCommand }) {
 
       {/* Right: time + CTA */}
       <div className="flex items-center gap-4">
+        <button
+          onClick={onOpenSettings}
+          className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors"
+          style={{ border: "1px solid #20242C" }}>
+          <Settings className="w-3.5 h-3.5" />
+          Settings
+        </button>
         <Link to="/repos"
           className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors"
           style={{ border: "1px solid #20242C" }}>
