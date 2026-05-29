@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import Header from "@/components/agents/Header";
-import AgentGrid from "@/components/agents/AgentGrid";
+import AgentDiagramCard from "@/components/agents/AgentDiagramCard";
 import AgentProfile from "@/components/agents/AgentProfile";
 import AgentCreator from "@/components/agents/AgentCreator";
 
@@ -131,38 +131,60 @@ export default function Dashboard() {
     setAgents(data);
   };
 
+  const onlineCount = agents.filter(a => a.status === "online").length;
+  const busyCount = agents.filter(a => a.status === "busy").length;
+
   return (
-    <div className="min-h-screen grain">
+    <div className="min-h-screen">
       <Header onQuickCommand={() => setShowCreator(true)} />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Page title */}
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <p className="eyebrow mb-1">OS³ Nexus Command</p>
-            <h1 className="text-3xl font-bold text-white" style={{ fontFamily: 'Chivo, sans-serif' }}>
-              Agent Registry
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              {loading ? "Loading..." : `${agents.length} agents deployed`}
-            </p>
+
+        {/* Hero banner */}
+        <div className="mb-10 p-8 rounded-2xl relative overflow-hidden"
+          style={{ background: "linear-gradient(135deg, #0D1117 0%, #111827 50%, #0D1117 100%)", border: "1px solid #1E2128" }}>
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(600px 300px at 80% 50%, rgba(0,255,102,0.04), transparent)" }} />
+          <div className="relative flex items-end justify-between flex-wrap gap-4">
+            <div>
+              <p className="eyebrow mb-2">JB³Ai — OS³ Nexus</p>
+              <h1 className="text-4xl font-black text-white leading-tight" style={{ fontFamily: "Chivo, sans-serif" }}>
+                Agent Registry
+              </h1>
+              <p className="text-slate-500 mt-2 max-w-lg text-sm">
+                Your deployed AI workforce. Click any card to expand the full agent diagram — personality, skills, principles, automation, memory and more.
+              </p>
+              <div className="flex items-center gap-5 mt-4">
+                <div className="flex items-center gap-2">
+                  <span className="status-dot status-online" />
+                  <span className="text-xs font-mono text-slate-400">{onlineCount} Online</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="status-dot status-busy" />
+                  <span className="text-xs font-mono text-slate-400">{busyCount} Busy</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-slate-600">{agents.length} Total</span>
+                </div>
+              </div>
+            </div>
+            <button
+              data-testid="create-agent-btn"
+              onClick={() => setShowCreator(true)}
+              className="cta-primary px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2"
+            >
+              + Deploy New Agent
+            </button>
           </div>
-          <button
-            data-testid="create-agent-btn"
-            onClick={() => setShowCreator(true)}
-            className="cta-primary px-5 py-2.5 rounded-lg text-sm flex items-center gap-2"
-          >
-            <span>+ New Agent</span>
-          </button>
         </div>
 
-        {/* Agent Grid */}
+        {/* Agent Diagram Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="panel p-5 animate-pulse">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-full bg-slate-800" />
+                  <div className="w-14 h-14 rounded-xl bg-slate-800" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-slate-800 rounded w-3/4" />
                     <div className="h-3 bg-slate-800 rounded w-1/2" />
@@ -174,7 +196,11 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <AgentGrid agents={agents} onOpen={setSelected} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {agents.map((agent) => (
+              <AgentDiagramCard key={agent.id} agent={agent} onOpen={setSelected} />
+            ))}
+          </div>
         )}
       </main>
 
