@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { X, Save, RefreshCcw, Sparkles } from "lucide-react";
+import { X, Save, RefreshCcw, Sparkles, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CouncilChat from "./CouncilChat";
 import AgentChat from "./AgentChat";
+import PanelAssistant from "./PanelAssistant";
+import AgentSync from "./AgentSync";
 
 const Field = ({ label, value, onChange, multiline }) => (
   <div>
@@ -29,7 +31,9 @@ export default function AgentProfile({ agent, onClose, onSave }) {
   const [form, setForm] = useState({ ...agent });
   const [saving, setSaving] = useState(false);
   const [generatingHeadshot, setGeneratingHeadshot] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const photoInputRef = useRef(null);
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
@@ -45,6 +49,15 @@ export default function AgentProfile({ agent, onClose, onSave }) {
     const result = await base44.integrations.Core.GenerateImage({ prompt });
     setForm((f) => ({ ...f, avatar_url: result.url }));
     setGeneratingHeadshot(false);
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm((f) => ({ ...f, avatar_url: file_url }));
+    setUploadingPhoto(false);
   };
 
   const statusColors = { online: "#00FF66", busy: "#F59E0B", offline: "#64748B" };
@@ -104,6 +117,8 @@ export default function AgentProfile({ agent, onClose, onSave }) {
           {[
             { key: "profile", label: "Profile" },
             { key: "chat", label: "Live Chat" },
+            { key: "assistant", label: "Assistant" },
+            { key: "sync", label: "Sync / Export" },
             { key: "council", label: "Council" },
           ].map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
@@ -131,13 +146,24 @@ export default function AgentProfile({ agent, onClose, onSave }) {
                   <button
                     data-testid="generate-headshot-btn"
                     onClick={handleGenerateHeadshot}
-                    disabled={generatingHeadshot}
+                    disabled={generatingHeadshot || uploadingPhoto}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#00FF66] transition-colors disabled:opacity-50"
                     style={{ border: "1px solid rgba(0,255,102,0.3)", background: "rgba(0,255,102,0.05)" }}
                   >
                     {generatingHeadshot ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
                     {generatingHeadshot ? "Generating…" : "Generate Headshot"}
                   </button>
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={uploadingPhoto || generatingHeadshot}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 transition-colors disabled:opacity-50"
+                    style={{ border: "1px solid #2A2F3A", background: "#1A1D24" }}
+                  >
+                    {uploadingPhoto ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                    {uploadingPhoto ? "Uploading…" : "Upload Photo"}
+                  </button>
+                  <input ref={photoInputRef} type="file" accept="image/*" className="hidden"
+                    onChange={handlePhotoUpload} />
                 </div>
               </div>
             </div>
@@ -238,6 +264,18 @@ export default function AgentProfile({ agent, onClose, onSave }) {
               agentName={agent.name}
               agentAvatar={agent.avatar_url}
             />
+          </div>
+        )}
+
+        {activeTab === "assistant" && (
+          <div className="p-6">
+            <PanelAssistant agent={agent} />
+          </div>
+        )}
+
+        {activeTab === "sync" && (
+          <div className="p-6">
+            <AgentSync agent={agent} onImport={(imported) => setForm((f) => ({ ...f, ...imported }))} />
           </div>
         )}
 
