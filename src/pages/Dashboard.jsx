@@ -5,6 +5,7 @@ import Header from "@/components/agents/Header";
 import AgentDiagramCard from "@/components/agents/AgentDiagramCard";
 import AgentProfile from "@/components/agents/AgentProfile";
 import AgentCreator from "@/components/agents/AgentCreator";
+import WeeklyReviewPanel from "@/components/agents/WeeklyReviewPanel";
 
 const SEED_AGENTS = [
   {
@@ -176,6 +177,11 @@ export default function Dashboard() {
               + Deploy New Agent
             </button>
           </div>
+        </div>
+
+        {/* Weekly Review Reminders */}
+        <div className="mb-8">
+          <WeeklyReviewPanel agents={agents} />
         </div>
 
         {/* Agent Diagram Grid */}

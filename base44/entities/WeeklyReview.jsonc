@@ -1,0 +1,67 @@
+{
+  "name": "WeeklyReview",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Review session title"
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Scheduled date for the review"
+    },
+    "day_of_week": {
+      "type": "string",
+      "enum": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "description": "Recurring day of week"
+    },
+    "time_of_day": {
+      "type": "string",
+      "description": "Time for the review e.g. 09:00"
+    },
+    "agents_to_review": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent names to be reviewed"
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Topics to cover in the review"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "in_progress",
+        "completed"
+      ],
+      "default": "upcoming"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Review notes / council discussion output"
+    },
+    "council_verdict": {
+      "type": "string",
+      "description": "Saved council verdict from the review session"
+    }
+  },
+  "required": [
+    "title",
+    "review_date"
+  ]
+}
