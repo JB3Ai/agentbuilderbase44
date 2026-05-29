@@ -6,6 +6,7 @@ import CouncilChat from "./CouncilChat";
 import AgentChat from "./AgentChat";
 import PanelAssistant from "./PanelAssistant";
 import AgentSync from "./AgentSync";
+import DependencyGraph from "./DependencyGraph";
 
 const Field = ({ label, value, onChange, multiline }) => (
   <div>
@@ -119,6 +120,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
             { key: "chat", label: "Live Chat" },
             { key: "assistant", label: "Assistant" },
             { key: "sync", label: "Sync / Export" },
+            { key: "workflows", label: "Workflows" },
             { key: "council", label: "Council" },
           ].map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
@@ -276,6 +278,12 @@ export default function AgentProfile({ agent, onClose, onSave }) {
         {activeTab === "sync" && (
           <div className="p-6">
             <AgentSync agent={agent} onImport={(imported) => setForm((f) => ({ ...f, ...imported }))} />
+          </div>
+        )}
+
+        {activeTab === "workflows" && (
+          <div className="p-6">
+            <DependencyGraph agents={[agent]} singleAgent={agent} />
           </div>
         )}
 

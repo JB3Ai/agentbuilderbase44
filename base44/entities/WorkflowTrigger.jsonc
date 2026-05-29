@@ -1,0 +1,41 @@
+{
+  "name": "WorkflowTrigger",
+  "type": "object",
+  "properties": {
+    "source_agent": {
+      "type": "string",
+      "description": "Name of the agent whose completed task triggers this"
+    },
+    "source_task": {
+      "type": "string",
+      "description": "The task/event that triggers this workflow"
+    },
+    "target_agent": {
+      "type": "string",
+      "description": "Name of the agent that receives the trigger"
+    },
+    "target_task": {
+      "type": "string",
+      "description": "The task to be assigned to the target agent"
+    },
+    "label": {
+      "type": "string",
+      "description": "Short label for the connection shown on the graph"
+    },
+    "trigger_condition": {
+      "type": "string",
+      "description": "Optional: condition that must be met for trigger to fire"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this trigger is active"
+    }
+  },
+  "required": [
+    "source_agent",
+    "target_agent",
+    "source_task",
+    "target_task"
+  ]
+}
