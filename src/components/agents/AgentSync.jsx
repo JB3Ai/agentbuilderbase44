@@ -5,6 +5,7 @@ import { RefreshCcw, Upload, Download, CheckCircle, AlertCircle, ExternalLink, C
 export default function AgentSync({ agent, onImport }) {
   const [apiKey, setApiKey] = useState("");
   const [appId, setAppId] = useState("");
+  const [baseUrl, setBaseUrl] = useState("https://api.base44.com");
   const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState(null); // { ok, message }
   const [remoteAgents, setRemoteAgents] = useState([]);
@@ -26,7 +27,7 @@ export default function AgentSync({ agent, onImport }) {
         current_task: agent.current_task,
       };
 
-      const res = await fetch(`https://api.base44.com/api/apps/${appId}/entities/Agent`, {
+      const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/apps/${appId}/entities/Agent`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +50,7 @@ export default function AgentSync({ agent, onImport }) {
     setSyncing(true);
     setResult(null);
     try {
-      const res = await fetch(`https://api.base44.com/api/apps/${appId}/entities/Agent?limit=50`, {
+      const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/apps/${appId}/entities/Agent?limit=50`, {
         headers: { "X-Api-Key": apiKey },
       });
       if (!res.ok) throw new Error(`API responded ${res.status}`);
@@ -166,6 +167,11 @@ module.exports = AGENT_DEF;
         <p className="text-xs text-slate-500 mb-4">Push this agent to another Base44 app, or pull agents from it.</p>
 
         <div className="space-y-3 mb-4">
+          <div>
+            <label className="eyebrow block mb-1.5">Base URL</label>
+            <input className="input-dark font-mono text-sm" placeholder="https://api.base44.com" value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)} />
+          </div>
           <div>
             <label className="eyebrow block mb-1.5">Base44 App ID</label>
             <input className="input-dark" placeholder="e.g. abc123xyz" value={appId}

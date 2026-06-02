@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { X, Save, RefreshCcw, Sparkles, Upload } from "lucide-react";
+import { X, Save, RefreshCcw, Sparkles, Upload, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CouncilChat from "./CouncilChat";
 import AgentChat from "./AgentChat";
@@ -97,6 +97,22 @@ export default function AgentProfile({ agent, onClose, onSave }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const data = { schema_version: "1.0", exported_at: new Date().toISOString(), agent: { name: form.name, role: form.role, status: form.status, risk_level: form.risk_level, personality: form.personality, current_task: form.current_task, skills: form.skills || [], operating_principles: form.operating_principles || [], age: form.age, gender: form.gender, dress_code: form.dress_code, automation: form.automation, memory: form.memory, avatar_url: form.avatar_url } };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url; a.download = `${form.name.replace(/\s+/g, "_")}.skills`; a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors"
+              style={{ border: "1px solid #20242C" }}
+              title="Download .skills file"
+            >
+              <Download className="w-3.5 h-3.5" />
+              .skills
+            </button>
             <button
               data-testid="save-agent-btn"
               onClick={handleSave}
