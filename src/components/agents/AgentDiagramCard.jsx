@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Zap, Brain, Settings } from "lucide-react";
+import { ChevronDown, ChevronUp, Zap, Brain, Settings, CheckSquare, Square } from "lucide-react";
 
 const statusColors = { online: "#00FF66", busy: "#F59E0B", offline: "#64748B" };
 const riskColors = { low: "risk-low", medium: "risk-medium", high: "risk-high" };
@@ -87,14 +87,14 @@ function TagList({ label, items, color = "text-slate-300" }) {
   );
 }
 
-export default function AgentDiagramCard({ agent, onOpen }) {
+export default function AgentDiagramCard({ agent, onOpen, selected, onSelect }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
     <motion.div
       layout
       className="agent-card panel cursor-pointer"
-      style={{ overflow: "hidden" }}
+      style={{ overflow: "hidden", borderColor: selected ? "rgba(0,255,102,0.5)" : undefined }}
     >
       {/* Compact header — always visible */}
       <div className="p-5" onClick={() => setExpanded((v) => !v)}>
@@ -107,6 +107,16 @@ export default function AgentDiagramCard({ agent, onOpen }) {
             <span className="status-dot absolute -bottom-0.5 -right-0.5"
               style={{ background: statusColors[agent.status] || "#00FF66", border: "2px solid #15171C" }} />
           </div>
+
+          {/* Checkbox */}
+          {onSelect && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelect(agent.id); }}
+              className="flex-shrink-0 text-slate-600 hover:text-[#00FF66] transition-colors mt-0.5"
+            >
+              {selected ? <CheckSquare className="w-4 h-4 text-[#00FF66]" /> : <Square className="w-4 h-4" />}
+            </button>
+          )}
 
           {/* Identity */}
           <div className="flex-1 min-w-0">

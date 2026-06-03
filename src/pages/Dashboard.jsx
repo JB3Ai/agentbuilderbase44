@@ -8,6 +8,8 @@ import AgentProfile from "@/components/agents/AgentProfile";
 import AgentCreator from "@/components/agents/AgentCreator";
 import WeeklyReviewPanel from "@/components/agents/WeeklyReviewPanel";
 import DependencyGraph from "@/components/agents/DependencyGraph";
+import BulkActionBar from "@/components/agents/BulkActionBar";
+import TemplateLibrary from "@/components/agents/TemplateLibrary";
 
 const SEED_AGENTS = [
   {
@@ -107,8 +109,10 @@ export default function Dashboard() {
   const [selected, setSelected] = useState(null);
   const [showCreator, setShowCreator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [loading, setLoading] = useState(true);
   const [seeded, setSeeded] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const loadAgents = async () => {
     const data = await base44.entities.Agent.list("-created_date", 50);
@@ -137,6 +141,14 @@ export default function Dashboard() {
 
   const onlineCount = agents.filter(a => a.status === "online").length;
   const busyCount = agents.filter(a => a.status === "busy").length;
+
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+
+  const handleBulkDone = async () => {
+    setSelectedIds([]);
+    await refresh();
+  };
 
   return (
     <div className="min-h-screen">
@@ -172,13 +184,22 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            <button
-              data-testid="create-agent-btn"
-              onClick={() => setShowCreator(true)}
-              className="cta-primary px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2"
-            >
-              + Deploy New Agent
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowTemplates(true)}
+                className="px-5 py-3 rounded-xl text-sm font-bold flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+                style={{ border: "1px solid #2A2F3A", background: "#15171C" }}
+              >
+                📋 Templates
+              </button>
+              <button
+                data-testid="create-agent-btn"
+                onClick={() => setShowCreator(true)}
+                className="cta-primary px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2"
+              >
+                + Deploy New Agent
+              </button>
+            </div>
           </div>
         </div>
 
@@ -202,7 +223,13 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
             {agents.map((agent) => (
-              <AgentDiagramCard key={agent.id} agent={agent} onOpen={setSelected} />
+              <AgentDiagramCard
+                key={agent.id}
+                agent={agent}
+                onOpen={setSelected}
+                selected={selectedIds.includes(agent.id)}
+                onSelect={toggleSelect}
+              />
             ))}
           </div>
         )}
@@ -256,6 +283,28 @@ export default function Dashboard() {
           />
         )}
       </AnimatePresence>
+
+      {/* Template Library */}
+      <AnimatePresence>
+        {showTemplates && (
+          <TemplateLibrary
+            onClose={() => setShowTemplates(false)}
+            onDeploy={async (template) => {
+              await base44.entities.Agent.create(template);
+              await refresh();
+              setShowTemplates(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedIds={selectedIds}
+        agents={agents}
+        onClear={() => setSelectedIds([])}
+        onDone={handleBulkDone}
+      />
     </div>
   );
 }
