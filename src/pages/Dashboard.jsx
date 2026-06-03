@@ -111,7 +111,6 @@ export default function Dashboard() {
   const [showSettings, setShowSettings] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [seeded, setSeeded] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
 
   const loadAgents = async () => {
@@ -121,14 +120,7 @@ export default function Dashboard() {
 
   const seedIfEmpty = async () => {
     const existing = await loadAgents();
-    if (existing.length === 0 && !seeded) {
-      setSeeded(true);
-      await base44.entities.Agent.bulkCreate(SEED_AGENTS);
-      const fresh = await loadAgents();
-      setAgents(fresh);
-    } else {
-      setAgents(existing);
-    }
+    setAgents(existing);
     setLoading(false);
   };
 
