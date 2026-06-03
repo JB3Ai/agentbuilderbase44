@@ -10,6 +10,7 @@ import WeeklyReviewPanel from "@/components/agents/WeeklyReviewPanel";
 import DependencyGraph from "@/components/agents/DependencyGraph";
 import BulkActionBar from "@/components/agents/BulkActionBar";
 import TemplateLibrary from "@/components/agents/TemplateLibrary";
+import AgentSummaryDashboard from "@/components/agents/AgentSummaryDashboard";
 
 const SEED_AGENTS = [
   {
@@ -194,6 +195,11 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Summary Dashboard */}
+        {!loading && agents.length > 0 && (
+          <AgentSummaryDashboard agents={agents} />
+        )}
 
         {/* Agent Diagram Grid */}
         {loading ? (
