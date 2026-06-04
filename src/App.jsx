@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import Dashboard from "./pages/Dashboard";
 import RepoExplorer from "./pages/RepoExplorer";
+import VoiceGrid from "./pages/VoiceGrid";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -38,6 +39,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/repos" element={<RepoExplorer />} />
+      <Route path="/voicegrid" element={<VoiceGrid />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

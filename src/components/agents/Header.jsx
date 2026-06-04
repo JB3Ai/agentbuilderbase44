@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Command, Zap, Github, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Phone } from "lucide-react";
 
 export default function Header({ onQuickCommand, onOpenSettings }) {
   const [now, setNow] = useState(new Date());
@@ -58,6 +59,12 @@ export default function Header({ onQuickCommand, onOpenSettings }) {
           style={{ border: "1px solid #20242C" }}>
           <Github className="w-3.5 h-3.5" />
           Repos
+        </Link>
+        <Link to="/voicegrid"
+          className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+          style={{ border: "1px solid rgba(0,255,102,0.3)", background: "rgba(0,255,102,0.06)", color: "#00FF66" }}>
+          <Phone className="w-3.5 h-3.5" />
+          VoiceGrid
         </Link>
         <div className="hidden sm:flex flex-col items-end">
           <span className="text-xs font-mono text-slate-300">{timeStr}</span>
