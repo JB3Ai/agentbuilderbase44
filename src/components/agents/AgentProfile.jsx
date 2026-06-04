@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { X, Save, RefreshCcw, Sparkles, Upload, Download } from "lucide-react";
+import AgentAvatar from "@/components/agents/AgentAvatar";
 import { base44 } from "@/api/base44Client";
 import CouncilChat from "./CouncilChat";
 import AgentChat from "./AgentChat";
@@ -86,8 +87,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
           style={{ background: "rgba(13,15,20,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid #20242C" }}>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <img src={form.avatar_url} alt={form.name} className="w-10 h-10 rounded-full object-cover"
-                style={{ border: "2px solid #20242C" }} />
+              <AgentAvatar name={form.name} avatarUrl={form.avatar_url} size="xl" />
               <span className="status-dot absolute bottom-0 right-0"
                 style={{ background: statusColors[form.status] || "#00FF66", border: "2px solid #0D0F14" }} />
             </div>
@@ -154,9 +154,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
           <div className="p-6 space-y-6">
             {/* Headshot section */}
             <div className="panel-steel p-5 flex items-center gap-6">
-              <img src={form.avatar_url} alt={form.name}
-                className="w-24 h-24 rounded-xl object-cover flex-shrink-0"
-                style={{ border: "2px solid #2F3F54" }} />
+              <AgentAvatar name={form.name} avatarUrl={form.avatar_url} size="lg" />
               <div className="flex-1">
                 <p className="text-white font-semibold mb-1" style={{ fontFamily: "Chivo, sans-serif" }}>{form.name}</p>
                 <p className="eyebrow mb-3">{form.role}</p>

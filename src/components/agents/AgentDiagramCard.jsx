@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Zap, Brain, Settings, CheckSquare, Square } from "lucide-react";
+import AgentAvatar from "@/components/agents/AgentAvatar";
 
 const statusColors = { online: "#00FF66", busy: "#F59E0B", offline: "#64748B" };
 const riskColors = { low: "risk-low", medium: "risk-medium", high: "risk-high" };
@@ -101,9 +102,7 @@ export default function AgentDiagramCard({ agent, onOpen, selected, onSelect }) 
         <div className="flex items-start gap-4">
           {/* Avatar + status */}
           <div className="relative flex-shrink-0">
-            <img src={agent.avatar_url} alt={agent.name}
-              className="w-14 h-14 rounded-xl object-cover"
-              style={{ border: "2px solid #20242C" }} />
+            <AgentAvatar name={agent.name} avatarUrl={agent.avatar_url} size="md" />
             <span className="status-dot absolute -bottom-0.5 -right-0.5"
               style={{ background: statusColors[agent.status] || "#00FF66", border: "2px solid #15171C" }} />
           </div>
