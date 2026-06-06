@@ -23,6 +23,21 @@
       "type": "string",
       "description": "What the agent is currently doing"
     },
+    "task_status": {
+      "type": "string",
+      "enum": [
+        "in_progress",
+        "review",
+        "stalled",
+        "complete"
+      ],
+      "default": "in_progress",
+      "description": "Current task progress status"
+    },
+    "task_progress": {
+      "type": "number",
+      "description": "Task completion percentage 0-100"
+    },
     "risk_level": {
       "type": "string",
       "enum": [
@@ -53,6 +68,10 @@
         "type": "string"
       },
       "description": "Core operating principles"
+    },
+    "operational_notes": {
+      "type": "string",
+      "description": "Editable operational instructions and notes for this agent"
     },
     "age": {
       "type": "string"

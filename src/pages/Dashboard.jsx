@@ -11,6 +11,7 @@ import DependencyGraph from "@/components/agents/DependencyGraph";
 import BulkActionBar from "@/components/agents/BulkActionBar";
 import TemplateLibrary from "@/components/agents/TemplateLibrary";
 import AgentSummaryDashboard from "@/components/agents/AgentSummaryDashboard";
+import TaskTracker from "@/components/agents/TaskTracker";
 
 const SEED_AGENTS = [
   {
@@ -199,6 +200,11 @@ export default function Dashboard() {
         {/* Summary Dashboard */}
         {!loading && agents.length > 0 && (
           <AgentSummaryDashboard agents={agents} />
+        )}
+
+        {/* Task Pulse Tracker */}
+        {!loading && agents.length > 0 && (
+          <TaskTracker agents={agents} onOpenAgent={setSelected} />
         )}
 
         {/* Agent Diagram Grid */}

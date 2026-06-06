@@ -133,6 +133,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
         <div className="flex border-b border-[#20242C] px-6">
           {[
             { key: "profile", label: "Profile" },
+            { key: "notes", label: "Op Notes" },
             { key: "chat", label: "Live Chat" },
             { key: "assistant", label: "Assistant" },
             { key: "sync", label: "Sync / Export" },
@@ -154,10 +155,24 @@ export default function AgentProfile({ agent, onClose, onSave }) {
           <div className="p-6 space-y-6">
             {/* Headshot section */}
             <div className="panel-steel p-5 flex items-center gap-6">
-              <AgentAvatar name={form.name} avatarUrl={form.avatar_url} size="lg" />
+              {/* Clickable avatar upload zone */}
+              <div
+                className="relative group cursor-pointer flex-shrink-0"
+                onClick={() => photoInputRef.current?.click()}
+                title="Click to upload headshot"
+              >
+                <AgentAvatar name={form.name} avatarUrl={form.avatar_url} size="lg" />
+                <div className="absolute inset-0 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: "rgba(0,0,0,0.6)" }}>
+                  {uploadingPhoto
+                    ? <RefreshCcw className="w-5 h-5 text-white animate-spin" />
+                    : <Upload className="w-5 h-5 text-white" />}
+                </div>
+              </div>
               <div className="flex-1">
                 <p className="text-white font-semibold mb-1" style={{ fontFamily: "Chivo, sans-serif" }}>{form.name}</p>
-                <p className="eyebrow mb-3">{form.role}</p>
+                <p className="eyebrow mb-1">{form.role}</p>
+                <p className="text-xs text-slate-600 mb-3">Click the avatar to upload a headshot</p>
                 <div className="flex gap-2 flex-wrap">
                   <button
                     data-testid="generate-headshot-btn"
@@ -167,7 +182,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
                     style={{ border: "1px solid rgba(0,255,102,0.3)", background: "rgba(0,255,102,0.05)" }}
                   >
                     {generatingHeadshot ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                    {generatingHeadshot ? "Generating…" : "Generate Headshot"}
+                    {generatingHeadshot ? "Generating…" : "Generate with AI"}
                   </button>
                   <button
                     onClick={() => photoInputRef.current?.click()}
@@ -219,6 +234,24 @@ export default function AgentProfile({ agent, onClose, onSave }) {
               <p className="eyebrow mb-3">Operational</p>
               <div className="space-y-4">
                 <Field label="Current Task" value={form.current_task} onChange={set("current_task")} />
+                <div>
+                  <label className="eyebrow block mb-1.5">Task Status</label>
+                  <select className="input-dark" value={form.task_status || "in_progress"} onChange={(e) => set("task_status")(e.target.value)}>
+                    <option value="in_progress">In Progress</option>
+                    <option value="review">In Review</option>
+                    <option value="stalled">Stalled</option>
+                    <option value="complete">Complete</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="eyebrow block mb-1.5">Task Progress ({form.task_progress || 0}%)</label>
+                  <input
+                    type="range" min="0" max="100" step="5"
+                    value={form.task_progress || 0}
+                    onChange={(e) => set("task_progress")(Number(e.target.value))}
+                    className="w-full accent-[#00FF66]"
+                  />
+                </div>
                 <Field label="Last Activity" value={form.last_activity} onChange={set("last_activity")} />
                 <Field label="Personality" value={form.personality} onChange={set("personality")} multiline />
                 <Field label="Automation Settings" value={form.automation} onChange={set("automation")} multiline />
@@ -271,6 +304,32 @@ export default function AgentProfile({ agent, onClose, onSave }) {
                 }}
               />
             </div>
+          </div>
+        )}
+
+        {activeTab === "notes" && (
+          <div className="p-6 space-y-4">
+            <div>
+              <p className="text-white font-bold mb-1" style={{ fontFamily: "Chivo, sans-serif" }}>Operational Notes</p>
+              <p className="text-xs text-slate-500 mb-4">
+                Record specific instructions, handling preferences, and behavioral directives for this agent. These notes persist with the agent record.
+              </p>
+              <textarea
+                className="input-dark resize-none w-full"
+                rows={16}
+                placeholder={`e.g.\n— Always escalate risk level HIGH to Adam Boss before acting\n— Prioritise client-facing tasks over internal admin\n— Use formal tone in all outbound communications\n— Check CRM before initiating any outreach`}
+                value={form.operational_notes || ""}
+                onChange={(e) => set("operational_notes")(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="cta-primary px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {saving ? "Saving…" : "Save Notes"}
+            </button>
           </div>
         )}
 
