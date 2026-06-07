@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Save, RefreshCcw, Sparkles, Upload, Download } from "lucide-react";
 import AgentAvatar from "@/components/agents/AgentAvatar";
@@ -35,7 +35,6 @@ export default function AgentProfile({ agent, onClose, onSave }) {
   const [generatingHeadshot, setGeneratingHeadshot] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const photoInputRef = useRef(null);
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
@@ -156,11 +155,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
             {/* Headshot section */}
             <div className="panel-steel p-5 flex items-center gap-6">
               {/* Clickable avatar upload zone */}
-              <div
-                className="relative group cursor-pointer flex-shrink-0"
-                onClick={() => photoInputRef.current?.click()}
-                title="Click to upload headshot"
-              >
+              <label className="relative group cursor-pointer flex-shrink-0" title="Click to upload headshot">
                 <AgentAvatar name={form.name} avatarUrl={form.avatar_url} size="lg" />
                 <div className="absolute inset-0 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   style={{ background: "rgba(0,0,0,0.6)" }}>
@@ -168,12 +163,27 @@ export default function AgentProfile({ agent, onClose, onSave }) {
                     ? <RefreshCcw className="w-5 h-5 text-white animate-spin" />
                     : <Upload className="w-5 h-5 text-white" />}
                 </div>
-              </div>
+                <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+              </label>
               <div className="flex-1">
                 <p className="text-white font-semibold mb-1" style={{ fontFamily: "Chivo, sans-serif" }}>{form.name}</p>
                 <p className="eyebrow mb-1">{form.role}</p>
                 <p className="text-xs text-slate-600 mb-3">Click the avatar to upload a headshot</p>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap items-center">
+                  {/* Inline file selector — most reliable cross-browser approach */}
+                  <label
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 cursor-pointer transition-colors"
+                    style={{ border: "1px solid #2A2F3A", background: "#1A1D24", opacity: uploadingPhoto || generatingHeadshot ? 0.5 : 1, pointerEvents: uploadingPhoto || generatingHeadshot ? "none" : "auto" }}
+                  >
+                    {uploadingPhoto ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                    {uploadingPhoto ? "Uploading…" : "📁 Choose File"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoUpload}
+                    />
+                  </label>
                   <button
                     data-testid="generate-headshot-btn"
                     onClick={handleGenerateHeadshot}
@@ -184,17 +194,6 @@ export default function AgentProfile({ agent, onClose, onSave }) {
                     {generatingHeadshot ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
                     {generatingHeadshot ? "Generating…" : "Generate with AI"}
                   </button>
-                  <button
-                    onClick={() => photoInputRef.current?.click()}
-                    disabled={uploadingPhoto || generatingHeadshot}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 transition-colors disabled:opacity-50"
-                    style={{ border: "1px solid #2A2F3A", background: "#1A1D24" }}
-                  >
-                    {uploadingPhoto ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-                    {uploadingPhoto ? "Uploading…" : "Upload Photo"}
-                  </button>
-                  <input ref={photoInputRef} type="file" accept="image/*" className="hidden"
-                    onChange={handlePhotoUpload} />
                 </div>
               </div>
             </div>
