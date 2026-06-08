@@ -204,6 +204,9 @@ export default function AgentProfile({ agent, onClose, onSave }) {
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Name" value={form.name} onChange={set("name")} />
                 <Field label="Role" value={form.role} onChange={set("role")} />
+                <div className="col-span-2">
+                  <Field label="Department" value={form.department} onChange={set("department")} />
+                </div>
                 <div>
                   <label className="eyebrow block mb-1.5">Status</label>
                   <select className="input-dark" value={form.status || "online"} onChange={(e) => set("status")(e.target.value)}>

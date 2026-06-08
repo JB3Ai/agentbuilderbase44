@@ -10,6 +10,18 @@
       "type": "string",
       "description": "Agent role/title"
     },
+    "department": {
+      "type": "string",
+      "description": "Department or division"
+    },
+    "check_in": {
+      "type": "string",
+      "description": "Check-in schedule (e.g. Daily, Monday & Thursday)"
+    },
+    "primary_outcome": {
+      "type": "string",
+      "description": "Primary outcome of this agent's work"
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -93,6 +105,10 @@
     "avatar_url": {
       "type": "string",
       "description": "URL to agent headshot"
+    },
+    "whatsapp_number": {
+      "type": "string",
+      "description": "WhatsApp number for chat connectivity (leave empty if not applicable)"
     }
   },
   "required": [

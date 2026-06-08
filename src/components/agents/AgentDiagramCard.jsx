@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Zap, Brain, Settings, CheckSquare, Square } from "lucide-react";
+import { ChevronDown, ChevronUp, Zap, Brain, Settings, CheckSquare, Square, MessageCircle } from "lucide-react";
 import AgentAvatar from "@/components/agents/AgentAvatar";
 
 const statusColors = { online: "#00FF66", busy: "#F59E0B", offline: "#64748B" };
@@ -241,12 +241,21 @@ export default function AgentDiagramCard({ agent, onOpen, selected, onSelect, in
         )}
       </AnimatePresence>
 
-      {/* Number badge */}
+      {/* Number badge + WhatsApp indicator */}
       {typeof index === "number" && (
-        <div className="absolute bottom-3 right-3 w-5 h-5 rounded flex items-center justify-center"
-          style={{ background: "rgba(0,255,102,0.08)", border: "1px solid rgba(0,255,102,0.15)" }}>
-          <span className="text-[10px] font-bold text-[#00FF66]/50"
-            style={{ fontFamily: "JetBrains Mono, monospace" }}>{index + 1}</span>
+        <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
+          {agent.whatsapp_number && (
+            <div className="w-4 h-4 rounded flex items-center justify-center"
+              style={{ background: "rgba(37,211,102,0.12)", border: "1px solid rgba(37,211,102,0.25)" }}
+              title={`WhatsApp: ${agent.whatsapp_number}`}>
+              <MessageCircle className="w-2.5 h-2.5 text-[#25D366]" />
+            </div>
+          )}
+          <div className="w-5 h-5 rounded flex items-center justify-center"
+            style={{ background: "rgba(0,255,102,0.08)", border: "1px solid rgba(0,255,102,0.15)" }}>
+            <span className="text-[10px] font-bold text-[#00FF66]/50"
+              style={{ fontFamily: "JetBrains Mono, monospace" }}>{index + 1}</span>
+          </div>
         </div>
       )}
     </motion.div>
