@@ -329,6 +329,38 @@ const SEED_AGENTS = [
   }
 ];
 
+const REGISTRY_ORDER = {
+  "Adam": 1,
+  "Vera": 2,
+  "Bobby": 3,
+  "Codie": 4,
+  "Dana": 5,
+  "Nova": 6,
+  "Max": 7,
+  "Chloe": 8,
+  "Jane": 9,
+  "Atlas": 10,
+  "Frank Mercer": 11,
+  "Scout": 12,
+  "Finley": 13,
+  "Lex": 14,
+  "Dr Emma": 15,
+  "Ricky Mindsfield": 16,
+  "Zandi": 17,
+  "Christa": 18,
+  "Iris": 19,
+  "JB³TALK": 20,
+};
+
+function sortByRegistry(agents) {
+  return [...agents].sort((a, b) => {
+    const aOrder = REGISTRY_ORDER[a.name] ?? 99;
+    const bOrder = REGISTRY_ORDER[b.name] ?? 99;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return (a.name || "").localeCompare(b.name || "");
+  });
+}
+
 export default function Dashboard() {
   const [agents, setAgents] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -345,7 +377,7 @@ export default function Dashboard() {
 
   const seedIfEmpty = async () => {
     const existing = await loadAgents();
-    setAgents(existing);
+    setAgents(sortByRegistry(existing));
     setLoading(false);
   };
 
@@ -353,7 +385,7 @@ export default function Dashboard() {
 
   const refresh = async () => {
     const data = await loadAgents();
-    setAgents(data);
+    setAgents(sortByRegistry(data));
   };
 
   const onlineCount = agents.filter(a => a.status === "online").length;

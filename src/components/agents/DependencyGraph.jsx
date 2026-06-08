@@ -223,53 +223,71 @@ export default function DependencyGraph({ agents }) {
             </filter>
           </defs>
 
-          {/* Edges */}
-          {triggers.map((trigger) => {
-            const src = getNode(trigger.source_agent);
-            const tgt = getNode(trigger.target_agent);
-            if (!src || !tgt) return null;
+          {/* Edges — with multi-edge offset for same-pair triggers */}
+          {(() => {
+            // Group triggers by source-target pair
+            const groups = {};
+            triggers.forEach((trigger) => {
+              const key = `${trigger.source_agent}|||${trigger.target_agent}`;
+              if (!groups[key]) groups[key] = [];
+              groups[key].push(trigger);
+            });
 
-            // Arrow from edge of source to edge of target
-            const dx = tgt.x - src.x;
-            const dy = tgt.y - src.y;
-            const len = Math.sqrt(dx * dx + dy * dy) || 1;
-            const nx = dx / len;
-            const ny = dy / len;
-            const x1 = src.x + nx * (NODE_W / 2);
-            const y1 = src.y + ny * (NODE_H / 2);
-            const x2 = tgt.x - nx * (NODE_W / 2 + 8);
-            const y2 = tgt.y - ny * (NODE_H / 2 + 8);
+            return Object.values(groups).flatMap((group) => {
+              const count = group.length;
+              return group.map((trigger, idx) => {
+                const src = getNode(trigger.source_agent);
+                const tgt = getNode(trigger.target_agent);
+                if (!src || !tgt) return null;
 
-            const mid = midpoint(x1, y1, x2, y2);
-            const isSelected = selectedTrigger?.id === trigger.id;
-            const color = trigger.active ? "#00FF66" : "#334155";
+                // Offset for multi-edge: spread edges apart
+                const offset = count > 1 ? (idx - (count - 1) / 2) * 18 : 0;
 
-            return (
-              <g key={trigger.id} onClick={() => setSelectedTrigger(isSelected ? null : trigger)} style={{ cursor: "pointer" }}>
-                {/* Wider invisible hit area */}
-                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={16} />
-                <line
-                  x1={x1} y1={y1} x2={x2} y2={y2}
-                  stroke={color}
-                  strokeWidth={isSelected ? 2 : 1.5}
-                  strokeDasharray={trigger.active ? "none" : "5,4"}
-                  markerEnd={trigger.active ? "url(#arrowhead)" : "url(#arrowhead-inactive)"}
-                  opacity={trigger.active ? 0.8 : 0.4}
-                />
-                {/* Edge label */}
-                {(trigger.label || trigger.source_task) && (
-                  <g>
-                    <rect x={mid.x - 48} y={mid.y - 10} width={96} height={20} rx={4}
-                      fill="#0B0D12" stroke={color} strokeWidth={0.5} opacity={0.9} />
-                    <text x={mid.x} y={mid.y + 4} textAnchor="middle"
-                      fill={color} fontSize={9} fontFamily="JetBrains Mono, monospace">
-                      {(trigger.label || trigger.source_task).slice(0, 18)}
-                    </text>
+                const dx = tgt.x - src.x;
+                const dy = tgt.y - src.y;
+                const len = Math.sqrt(dx * dx + dy * dy) || 1;
+                const perpX = -dy / len;
+                const perpY = dx / len;
+
+                const nx = dx / len;
+                const ny = dy / len;
+                const x1 = src.x + nx * (NODE_W / 2) + perpX * offset;
+                const y1 = src.y + ny * (NODE_H / 2) + perpY * offset;
+                const x2 = tgt.x - nx * (NODE_W / 2 + 8) + perpX * offset;
+                const y2 = tgt.y - ny * (NODE_H / 2 + 8) + perpY * offset;
+
+                const mid = midpoint(x1, y1, x2, y2);
+                const isSelected = selectedTrigger?.id === trigger.id;
+                const color = trigger.active ? "#00FF66" : "#334155";
+
+                return (
+                  <g key={trigger.id} onClick={() => setSelectedTrigger(isSelected ? null : trigger)} style={{ cursor: "pointer" }}>
+                    {/* Wider invisible hit area */}
+                    <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={16} />
+                    <line
+                      x1={x1} y1={y1} x2={x2} y2={y2}
+                      stroke={color}
+                      strokeWidth={isSelected ? 2 : 1.5}
+                      strokeDasharray={trigger.active ? "none" : "5,4"}
+                      markerEnd={trigger.active ? "url(#arrowhead)" : "url(#arrowhead-inactive)"}
+                      opacity={trigger.active ? 0.8 : 0.4}
+                    />
+                    {/* Edge label */}
+                    {(trigger.label || trigger.source_task) && (
+                      <g>
+                        <rect x={mid.x - 48} y={mid.y - 10 + offset * 0.5} width={96} height={20} rx={4}
+                          fill="#0B0D12" stroke={color} strokeWidth={0.5} opacity={0.9} />
+                        <text x={mid.x} y={mid.y + 4 + offset * 0.5} textAnchor="middle"
+                          fill={color} fontSize={9} fontFamily="JetBrains Mono, monospace">
+                          {(trigger.label || trigger.source_task).slice(0, 18)}
+                        </text>
+                      </g>
+                    )}
                   </g>
-                )}
-              </g>
-            );
-          })}
+                );
+              });
+            });
+          })()}
 
           {/* Nodes */}
           {nodes.map((node) => {
