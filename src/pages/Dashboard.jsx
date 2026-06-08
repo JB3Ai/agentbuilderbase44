@@ -46,7 +46,7 @@ const SEED_AGENTS = [
   },
   {
     name: "Bobby",
-    role: "Internal Systems Administrator",
+    role: "Technical Support & Systems Administrator",
     status: "online",
     current_task: "Daily health systems report — domains, email, hosting, app status, GitHub activity",
     risk_level: "medium",
@@ -55,13 +55,13 @@ const SEED_AGENTS = [
     skills: ["System Health Monitoring", "Domain & DNS Management", "Email Infrastructure", "Hosting Oversight", "GitHub Activity Tracking"],
     operating_principles: ["Build for scale, not for now", "Document everything", "Fail safely"],
     age: "38", gender: "Male", dress_code: "Smart casual",
-    automation: "Daily automated health report. Active when support is needed.",
-    memory: "Technical Operations. Oversees all infrastructure — domains, email, hosting, apps, GitHub.",
+    automation: "Daily automated health report. Active when tech support is needed.",
+    memory: "Technical Support. Oversees infrastructure — domains, email, hosting, apps, GitHub. First line of tech support — Codie handles code and development.",
     avatar_url: "https://static.prod-images.emergentagent.com/jobs/335b4c73-05db-4253-9800-cdf80a7eb6ad/images/34c635964af34e17464ae950de4cd2e31fda5bcd874de430b56f350cbec03546.png"
   },
   {
     name: "Codie",
-    role: "Chief Technology Officer",
+    role: "Chief Technology Officer — Code & Development",
     status: "online",
     current_task: "Daily build report — reviewing all code and build plans",
     risk_level: "medium",
@@ -436,10 +436,11 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
-            {agents.map((agent) => (
+            {agents.map((agent, idx) => (
               <AgentDiagramCard
                 key={agent.id}
                 agent={agent}
+                index={idx}
                 onOpen={setSelected}
                 selected={selectedIds.includes(agent.id)}
                 onSelect={toggleSelect}

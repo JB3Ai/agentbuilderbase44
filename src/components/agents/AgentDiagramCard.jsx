@@ -88,13 +88,13 @@ function TagList({ label, items, color = "text-slate-300" }) {
   );
 }
 
-export default function AgentDiagramCard({ agent, onOpen, selected, onSelect }) {
+export default function AgentDiagramCard({ agent, onOpen, selected, onSelect, index }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
     <motion.div
       layout
-      className="agent-card panel cursor-pointer"
+      className="agent-card panel cursor-pointer relative"
       style={{ overflow: "hidden", borderColor: selected ? "rgba(0,255,102,0.5)" : undefined }}
     >
       {/* Compact header — always visible */}
@@ -240,6 +240,15 @@ export default function AgentDiagramCard({ agent, onOpen, selected, onSelect }) 
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Number badge */}
+      {typeof index === "number" && (
+        <div className="absolute bottom-3 right-3 w-5 h-5 rounded flex items-center justify-center"
+          style={{ background: "rgba(0,255,102,0.08)", border: "1px solid rgba(0,255,102,0.15)" }}>
+          <span className="text-[10px] font-bold text-[#00FF66]/50"
+            style={{ fontFamily: "JetBrains Mono, monospace" }}>{index + 1}</span>
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -98,7 +98,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
-                const data = { schema_version: "1.0", exported_at: new Date().toISOString(), agent: { name: form.name, role: form.role, status: form.status, risk_level: form.risk_level, personality: form.personality, current_task: form.current_task, skills: form.skills || [], operating_principles: form.operating_principles || [], age: form.age, gender: form.gender, dress_code: form.dress_code, automation: form.automation, memory: form.memory, avatar_url: form.avatar_url } };
+                const data = { schema_version: "1.0", exported_at: new Date().toISOString(), agent: { name: form.name, role: form.role, status: form.status, risk_level: form.risk_level, personality: form.personality, current_task: form.current_task, task_status: form.task_status, task_progress: form.task_progress, skills: form.skills || [], operating_principles: form.operating_principles || [], age: form.age, gender: form.gender, dress_code: form.dress_code, automation: form.automation, memory: form.memory, operational_notes: form.operational_notes, avatar_url: form.avatar_url } };
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");

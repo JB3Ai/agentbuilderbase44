@@ -259,19 +259,6 @@ const TEMPLATES = [
     category: "Intelligence & Platforms",
     items: [
       {
-        name: "Trend Intel",
-        role: "Market Trend & Sales Intelligence Agent",
-        status: "online",
-        risk_level: "medium",
-        personality: "Data-driven, commercially sharp, forward-looking. Powered by Apollo subscription — prospect data, company intelligence, and market signals at scale.",
-        skills: ["Market Trend Analysis", "Competitor Intelligence", "Prospect Research", "Apollo Data Integration", "Lead Signal Detection", "Sales Intelligence Reports", "Contact & Company Enrichment"],
-        operating_principles: ["Data over intuition", "Apollo subscription required for full capability", "Surface signals early", "Always cite the source"],
-        age: "N/A", gender: "Non-binary", dress_code: "N/A",
-        automation: "On-demand. Requires active Apollo subscription. Returns structured intelligence report.",
-        memory: "Powered by Apollo (apollo.io) — subscription required, affiliate referral available. Integration planned.",
-        avatar_url: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=400&fit=crop&crop=center",
-      },
-      {
         name: "ViewGrid",
         role: "Visual Monitoring & Grid Intelligence Agent",
         status: "online",

@@ -21,10 +21,21 @@ export default function AgentSync({ agent, onImport }) {
         name: agent.name,
         role: agent.role,
         personality: agent.personality,
-        skills: agent.skills,
-        operating_principles: agent.operating_principles,
+        skills: agent.skills || [],
+        operating_principles: agent.operating_principles || [],
         status: agent.status,
         current_task: agent.current_task,
+        task_status: agent.task_status,
+        task_progress: agent.task_progress,
+        risk_level: agent.risk_level,
+        last_activity: agent.last_activity,
+        age: agent.age,
+        gender: agent.gender,
+        dress_code: agent.dress_code,
+        automation: agent.automation,
+        memory: agent.memory,
+        operational_notes: agent.operational_notes,
+        avatar_url: agent.avatar_url,
       };
 
       const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/apps/${appId}/entities/Agent`, {
@@ -76,6 +87,8 @@ export default function AgentSync({ agent, onImport }) {
         risk_level: agent.risk_level,
         personality: agent.personality,
         current_task: agent.current_task,
+        task_status: agent.task_status,
+        task_progress: agent.task_progress,
         skills: agent.skills || [],
         operating_principles: agent.operating_principles || [],
         age: agent.age,
@@ -83,6 +96,7 @@ export default function AgentSync({ agent, onImport }) {
         dress_code: agent.dress_code,
         automation: agent.automation,
         memory: agent.memory,
+        operational_notes: agent.operational_notes,
         avatar_url: agent.avatar_url,
       }
     };
