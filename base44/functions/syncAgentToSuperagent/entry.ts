@@ -3,7 +3,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 const SUPERAGENT_BASE = "https://app.base44.com/api/agents";
 
 // Fields shared between Nexus Agent entity and Superagent platform
-const SHARED_FIELDS = ["name", "role", "personality"];
+// Superagent only accepts name and description (no role/personality as separate fields)
+const SHARED_FIELDS = ["name"];
 
 function pickFields(obj, fields) {
   const result = {};
@@ -103,8 +104,6 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           name: localAgent.name,
-          role: localAgent.role || "",
-          personality: localAgent.personality || "",
         }),
       });
 
