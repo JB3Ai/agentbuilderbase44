@@ -105,6 +105,9 @@ export default function DependencyGraph({ agents }) {
   const [editingTrigger, setEditingTrigger] = useState(null);
   const [selectedTrigger, setSelectedTrigger] = useState(null);
   const [dragging, setDragging] = useState(null);
+  const [dragSource, setDragSource] = useState(null);
+  const [dragLineTo, setDragLineTo] = useState(null);
+  const [presetTrigger, setPresetTrigger] = useState(null);
   const [svgSize, setSvgSize] = useState({ w: 800, h: 400 });
 
   const loadTriggers = async () => {
@@ -130,24 +133,53 @@ export default function DependencyGraph({ agents }) {
 
   const getNode = (agentName) => nodes.find(n => n.agent.name === agentName);
 
-  // Drag
+  // Drag: regular = reposition node, Shift+drag = create trigger
   const onMouseDown = useCallback((e, nodeId) => {
     e.preventDefault();
-    setDragging(nodeId);
-  }, []);
+    if (e.shiftKey) {
+      const node = nodes.find(n => n.id === nodeId);
+      setDragSource({ nodeId, agent: node.agent, startX: node.x, startY: node.y });
+      setDragLineTo({ x: node.x, y: node.y });
+    } else {
+      setDragging(nodeId);
+    }
+  }, [nodes]);
 
   const onMouseMove = useCallback((e) => {
-    if (!dragging || !svgRef.current) return;
+    if (!svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    setNodes(ns => ns.map(n => n.id === dragging ? { ...n, x, y } : n));
-  }, [dragging]);
+    if (dragging) {
+      setNodes(ns => ns.map(n => n.id === dragging ? { ...n, x, y } : n));
+    }
+    if (dragSource) {
+      setDragLineTo({ x, y });
+    }
+  }, [dragging, dragSource]);
 
-  const onMouseUp = useCallback(() => setDragging(null), []);
+  const onMouseUp = useCallback((e) => {
+    if (dragSource && svgRef.current) {
+      const rect = svgRef.current.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const target = nodes.find(n => {
+        if (n.id === dragSource.nodeId) return false;
+        const nx = n.x - NODE_W / 2;
+        const ny = n.y - NODE_H / 2;
+        return mx >= nx && mx <= nx + NODE_W && my >= ny && my <= ny + NODE_H;
+      });
+      if (target) {
+        setPresetTrigger({ source_agent: dragSource.agent.name, target_agent: target.agent.name, source_task: "", target_task: "", label: "", trigger_condition: "", active: true });
+      }
+    }
+    setDragSource(null);
+    setDragLineTo(null);
+    setDragging(null);
+  }, [dragSource, nodes]);
 
   const handleSaveTrigger = async (form) => {
-    if (editingTrigger) {
+    if (editingTrigger?.id) {
       await base44.entities.WorkflowTrigger.update(editingTrigger.id, form);
     } else {
       await base44.entities.WorkflowTrigger.create(form);
@@ -155,6 +187,7 @@ export default function DependencyGraph({ agents }) {
     await loadTriggers();
     setShowForm(false);
     setEditingTrigger(null);
+    setPresetTrigger(null);
   };
 
   const handleDelete = async (id) => {
@@ -174,7 +207,7 @@ export default function DependencyGraph({ agents }) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-white font-semibold" style={{ fontFamily: "Chivo, sans-serif" }}>Agent Dependency Graph</h3>
-          <p className="eyebrow mt-0.5">Drag nodes to rearrange · Click edges to inspect triggers</p>
+          <p className="eyebrow mt-0.5">Drag to rearrange · Shift+drag between agents to create triggers · Click edges to inspect</p>
         </div>
         <button
           onClick={() => { setEditingTrigger(null); setShowForm(v => !v); }}
@@ -187,13 +220,13 @@ export default function DependencyGraph({ agents }) {
 
       {/* Form */}
       <AnimatePresence>
-        {(showForm || editingTrigger) && (
+        {(showForm || editingTrigger || presetTrigger) && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
             <TriggerForm
               agents={agents}
-              trigger={editingTrigger}
+              trigger={editingTrigger || presetTrigger}
               onSave={handleSaveTrigger}
-              onCancel={() => { setShowForm(false); setEditingTrigger(null); }}
+              onCancel={() => { setShowForm(false); setEditingTrigger(null); setPresetTrigger(null); }}
             />
           </motion.div>
         )}
@@ -208,7 +241,7 @@ export default function DependencyGraph({ agents }) {
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
           onMouseLeave={onMouseUp}
-          style={{ display: "block", cursor: dragging ? "grabbing" : "default" }}
+          style={{ display: "block", cursor: dragSource ? "crosshair" : dragging ? "grabbing" : "default" }}
         >
           <defs>
             <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
@@ -288,6 +321,19 @@ export default function DependencyGraph({ agents }) {
               });
             });
           })()}
+
+          {/* Shift+drag preview line */}
+          {dragSource && dragLineTo && (
+            <g>
+              <line
+                x1={dragSource.startX} y1={dragSource.startY}
+                x2={dragLineTo.x} y2={dragLineTo.y}
+                stroke="#00FF66" strokeWidth={2} strokeDasharray="6,4" opacity={0.7}
+                markerEnd="url(#arrowhead)"
+              />
+              <circle cx={dragLineTo.x} cy={dragLineTo.y} r={6} fill="rgba(0,255,102,0.15)" stroke="#00FF66" strokeWidth={1.5} />
+            </g>
+          )}
 
           {/* Nodes */}
           {nodes.map((node) => {
