@@ -113,6 +113,15 @@
     "superagent_id": {
       "type": "string",
       "description": "Superagent ID from the Base44 dashboard (e.g. 69eddd3fb35526e88df2b8c1). Used for direct chat connectivity."
+    },
+    "is_syncing": {
+      "type": "boolean",
+      "default": false,
+      "description": "Internal flag to prevent infinite sync loops"
+    },
+    "superagent_synced_at": {
+      "type": "string",
+      "description": "Timestamp of last successful sync with Superagent"
     }
   },
   "required": [
