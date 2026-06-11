@@ -25,13 +25,69 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { agentId, apiKey } = await req.json();
+    const { agentId, apiKey, mode } = await req.json();
 
+    // Use provided apiKey or fall back to the server-side secret
+    const resolvedApiKey = apiKey || Deno.env.get("SUPERAGENT_API_KEY");
+    
+    if (!resolvedApiKey) {
+      return Response.json({
+        status: "no_api_key",
+        message: "Superagent API key is required.",
+      });
+    }
+
+    // ── Batch mode: sync all linked agents ──
+    if (mode === "batch" || (!agentId && mode !== "single")) {
+      const allAgents = await base44.entities.Agent.list("-updated_date", 100);
+      const linked = allAgents.filter(a => a.superagent_id);
+      
+      const results = [];
+      for (const localAgent of linked) {
+        try {
+          const remoteRes = await fetch(
+            `${SUPERAGENT_BASE}/${localAgent.superagent_id}`,
+            { headers: { api_key: resolvedApiKey } }
+          );
+          if (!remoteRes.ok) continue;
+          
+          const remoteAgent = await remoteRes.json();
+          const localHash = hash(localAgent);
+          const remoteHash = hash(remoteAgent);
+          
+          if (localHash === remoteHash) continue;
+          
+          const localUpdated = new Date(localAgent.updated_date).getTime();
+          const remoteUpdated = new Date(remoteAgent.updated_date || 0).getTime();
+          
+          if (remoteUpdated > localUpdated) {
+            // Pull: Superagent is newer
+            const merged = { ...localAgent };
+            for (const f of SHARED_FIELDS) {
+              merged[f] = remoteAgent[f] || localAgent[f] || "";
+            }
+            await base44.entities.Agent.update(localAgent.id, {
+              ...merged,
+              is_syncing: true,
+              superagent_synced_at: new Date().toISOString(),
+            });
+            results.push({ name: localAgent.name, direction: "pull" });
+          }
+        } catch { /* skip individual failures */ }
+      }
+      
+      return Response.json({
+        status: "batch_done",
+        synced: results.length,
+        results,
+      });
+    }
+
+    // ── Single-agent mode ──
     if (!agentId) {
       return Response.json({ error: "agentId is required" }, { status: 400 });
     }
 
-    // ── Fetch local agent ──
     const [localAgent] = await base44.entities.Agent.filter({ id: agentId });
     if (!localAgent) {
       return Response.json({ error: "Agent not found" }, { status: 404 });
@@ -44,17 +100,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!apiKey) {
-      return Response.json({
-        status: "no_api_key",
-        message: "Superagent API key is required. Enter it below.",
-      });
-    }
-
-    // ── Fetch remote agent from Superagent ──
     const remoteRes = await fetch(
       `${SUPERAGENT_BASE}/${localAgent.superagent_id}`,
-      { headers: { api_key: apiKey } }
+      { headers: { api_key: resolvedApiKey } }
     );
 
     if (!remoteRes.ok) {
@@ -66,13 +114,10 @@ Deno.serve(async (req) => {
     }
 
     const remoteAgent = await remoteRes.json();
-
-    // ── Compare ──
     const localHash = hash(localAgent);
     const remoteHash = hash(remoteAgent);
 
     if (localHash === remoteHash) {
-      // Already in sync — just update the timestamp
       await base44.entities.Agent.update(localAgent.id, {
         is_syncing: true,
         superagent_synced_at: new Date().toISOString(),
@@ -85,13 +130,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── Determine direction by timestamps ──
     const localUpdated = new Date(localAgent.updated_date).getTime();
     const remoteUpdated = new Date(remoteAgent.updated_date || 0).getTime();
-
     const direction = localUpdated >= remoteUpdated ? "push" : "pull";
 
-    // ── Diff ──
     const diff = [];
     for (const f of SHARED_FIELDS) {
       const lv = localAgent[f] || "";
@@ -102,14 +144,13 @@ Deno.serve(async (req) => {
     }
 
     if (direction === "push") {
-      // ── Push local → Superagent ──
       const patchRes = await fetch(
         `${SUPERAGENT_BASE}/${localAgent.superagent_id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            api_key: apiKey,
+            api_key: resolvedApiKey,
           },
           body: JSON.stringify(pickFields(localAgent, SHARED_FIELDS)),
         }
@@ -134,10 +175,9 @@ Deno.serve(async (req) => {
         message: `Pushed "${localAgent.name}" to Superagent.`,
         diff,
         local: pickFields(localAgent, SHARED_FIELDS),
-        remote: pickFields(localAgent, SHARED_FIELDS), // now matching
+        remote: pickFields(localAgent, SHARED_FIELDS),
       });
     } else {
-      // ── Pull Superagent → local ──
       const merged = { ...localAgent };
       for (const f of SHARED_FIELDS) {
         merged[f] = remoteAgent[f] || localAgent[f] || "";
@@ -154,7 +194,7 @@ Deno.serve(async (req) => {
         direction: "pull",
         message: `Pulled "${localAgent.name}" from Superagent.`,
         diff,
-        local: pickFields(remoteAgent, SHARED_FIELDS), // now matching
+        local: pickFields(remoteAgent, SHARED_FIELDS),
         remote: pickFields(remoteAgent, SHARED_FIELDS),
       });
     }
