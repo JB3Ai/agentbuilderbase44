@@ -176,38 +176,19 @@ Deno.serve(async (req) => {
     }
 
     if (direction === "push") {
-      const patchRes = await fetch(
-        `${SUPERAGENT_BASE}/${localAgent.superagent_id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            api_key: resolvedApiKey,
-          },
-          body: JSON.stringify(pickFields(localAgent, SHARED_FIELDS)),
-        }
-      );
-
-      if (!patchRes.ok) {
-        const errText = await patchRes.text();
-        return Response.json(
-          { error: `Superagent update failed (${patchRes.status}): ${errText}` },
-          { status: 502 }
-        );
-      }
-
+      // Superagent API doesn't support updates — report diff without pushing
       await base44.entities.Agent.update(localAgent.id, {
         is_syncing: true,
         superagent_synced_at: new Date().toISOString(),
       });
 
       return Response.json({
-        status: "pushed",
+        status: "push_skipped",
         direction: "push",
-        message: `Pushed "${localAgent.name}" to Superagent.`,
+        message: `"${localAgent.name}" is newer in Nexus. Superagent updates are not supported — recreate to sync.`,
         diff,
         local: pickFields(localAgent, SHARED_FIELDS),
-        remote: pickFields(localAgent, SHARED_FIELDS),
+        remote: pickFields(remoteAgent, SHARED_FIELDS),
       });
     } else {
       const merged = { ...localAgent };
