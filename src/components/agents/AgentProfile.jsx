@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { X, Save, RefreshCcw, Sparkles, Upload, Download } from "lucide-react";
+import { X, Save, RefreshCcw, Sparkles, Upload, Download, ArrowRightLeft } from "lucide-react";
 import AgentAvatar from "@/components/agents/AgentAvatar";
 import { base44 } from "@/api/base44Client";
 import CouncilChat from "./CouncilChat";
@@ -35,6 +35,8 @@ export default function AgentProfile({ agent, onClose, onSave }) {
   const [generatingHeadshot, setGeneratingHeadshot] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [syncClosing, setSyncClosing] = useState(false);
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
@@ -42,6 +44,31 @@ export default function AgentProfile({ agent, onClose, onSave }) {
     setSaving(true);
     await onSave(form);
     setSaving(false);
+  };
+
+  const hasSuperagent = !!agent.superagent_id;
+
+  const handleCloseAttempt = () => {
+    if (hasSuperagent) {
+      setShowCloseConfirm(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleSyncAndClose = async () => {
+    setSyncClosing(true);
+    try {
+      await base44.functions.invoke("syncAgentToSuperagent", { agentId: agent.id });
+    } catch { /* proceed */ }
+    setSyncClosing(false);
+    setShowCloseConfirm(false);
+    onClose();
+  };
+
+  const handleJustClose = () => {
+    setShowCloseConfirm(false);
+    onClose();
   };
 
   const handleGenerateHeadshot = async () => {
@@ -70,7 +97,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-start justify-end"
       style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
-      onClick={onClose}
+      onClick={handleCloseAttempt}
     >
       <motion.div
         initial={{ x: "100%" }}
@@ -121,7 +148,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
               <Save className="w-4 h-4" />
               {saving ? "Saving…" : "Save"}
             </button>
-            <button onClick={onClose} data-testid="close-profile-btn"
+            <button onClick={handleCloseAttempt} data-testid="close-profile-btn"
               className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
               <X className="w-5 h-5" />
             </button>
@@ -383,6 +410,66 @@ export default function AgentProfile({ agent, onClose, onSave }) {
           </div>
         )}
       </motion.div>
+
+      {/* ── Close Confirmation Dialog ── */}
+      {showCloseConfirm && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 flex items-center justify-center z-20"
+          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)" }}
+          onClick={() => setShowCloseConfirm(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="p-6 rounded-xl max-w-sm w-full mx-4"
+            style={{ background: "#15171C", border: "1px solid #20242C" }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <ArrowRightLeft className="w-5 h-5 text-[#00FF66] flex-shrink-0" />
+              <div>
+                <p className="text-white font-semibold text-sm" style={{ fontFamily: "Chivo, sans-serif" }}>
+                  Sync before closing?
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Push latest changes to Superagent before you go.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCloseConfirm(false)}
+                className="flex-1 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white transition-colors"
+                style={{ border: "1px solid #20242C" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleJustClose}
+                className="flex-1 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white transition-colors"
+                style={{ border: "1px solid #2A2F3A", background: "#1A1D24" }}
+              >
+                Just Close
+              </button>
+              <button
+                onClick={handleSyncAndClose}
+                disabled={syncClosing}
+                className="cta-primary flex-1 px-3 py-2 rounded-lg text-sm flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                {syncClosing ? (
+                  <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ArrowRightLeft className="w-3.5 h-3.5" />
+                )}
+                {syncClosing ? "Syncing…" : "Sync & Close"}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
