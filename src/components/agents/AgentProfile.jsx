@@ -378,6 +378,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
               agentName={agent.name}
               agentAvatar={agent.avatar_url}
               superagentId={form.superagent_id}
+              whatsappNumber={form.whatsapp_number}
             />
           </div>
         )}

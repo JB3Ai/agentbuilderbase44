@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, Bot, User, AlertCircle, RefreshCcw, Key, ArrowRight } from "lucide-react";
+import { Send, Loader2, Bot, User, AlertCircle, RefreshCcw, Key, ArrowRight, MessageCircle, MessageSquare, ExternalLink } from "lucide-react";
 
 const SUPERAGENT_BASE = "https://app.base44.com/api/agents";
 const LS_API_KEY = "base44_superagent_api_key";
 
-export default function AgentChat({ agentName, agentAvatar, superagentId }) {
+export default function AgentChat({ agentName, agentAvatar, superagentId, whatsappNumber }) {
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -287,6 +287,58 @@ export default function AgentChat({ agentName, agentAvatar, superagentId }) {
             title="Change API key"
           >
             <Key className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* ─── Channel linking bar ─── */}
+      <div className="flex gap-2 pt-3 mt-1">
+        {/* WhatsApp */}
+        <a
+          href={base44.agents.getWhatsAppConnectURL(agentName)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium flex-1 transition-colors hover:opacity-90"
+          style={{ background: "#075E54", color: "#fff" }}
+        >
+          <MessageCircle className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">WhatsApp</span>
+          <ExternalLink className="w-3 h-3 ml-auto flex-shrink-0 opacity-60" />
+        </a>
+
+        {/* Telegram */}
+        <a
+          href={base44.agents.getTelegramConnectURL(agentName)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium flex-1 transition-colors hover:opacity-90"
+          style={{ background: "#0088cc", color: "#fff" }}
+        >
+          <Send className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">Telegram</span>
+          <ExternalLink className="w-3 h-3 ml-auto flex-shrink-0 opacity-60" />
+        </a>
+
+        {/* iMessage */}
+        {whatsappNumber ? (
+          <a
+            href={`sms:${whatsappNumber}`}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium flex-1 transition-colors hover:opacity-90"
+            style={{ background: "#34C759", color: "#fff" }}
+          >
+            <MessageSquare className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">iMessage</span>
+            <ExternalLink className="w-3 h-3 ml-auto flex-shrink-0 opacity-60" />
+          </a>
+        ) : (
+          <button
+            disabled
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium flex-1 opacity-40"
+            style={{ background: "#2A2F3A", color: "#64748B" }}
+            title="Add a WhatsApp number in the Profile tab to enable iMessage"
+          >
+            <MessageSquare className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">iMessage</span>
           </button>
         )}
       </div>
