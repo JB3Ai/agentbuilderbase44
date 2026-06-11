@@ -207,6 +207,16 @@ export default function AgentProfile({ agent, onClose, onSave }) {
                 <div className="col-span-2">
                   <Field label="Department" value={form.department} onChange={set("department")} />
                 </div>
+                <div className="col-span-2">
+                  <label className="eyebrow block mb-1.5">Superagent ID</label>
+                  <input
+                    className="input-dark font-mono text-sm"
+                    placeholder="e.g. 69eddd3fb35526e88df2b8c1"
+                    value={form.superagent_id || ""}
+                    onChange={(e) => set("superagent_id")(e.target.value)}
+                  />
+                  <p className="text-xs text-slate-600 mt-1">From your Superagent URL: https://app.base44.com/api/agents/<b>THIS_ID</b></p>
+                </div>
                 <div>
                   <label className="eyebrow block mb-1.5">Status</label>
                   <select className="input-dark" value={form.status || "online"} onChange={(e) => set("status")(e.target.value)}>
@@ -340,6 +350,7 @@ export default function AgentProfile({ agent, onClose, onSave }) {
             <AgentChat
               agentName={agent.name}
               agentAvatar={agent.avatar_url}
+              superagentId={form.superagent_id}
             />
           </div>
         )}

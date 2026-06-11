@@ -109,6 +109,10 @@
     "whatsapp_number": {
       "type": "string",
       "description": "WhatsApp number for chat connectivity (leave empty if not applicable)"
+    },
+    "superagent_id": {
+      "type": "string",
+      "description": "Superagent ID from the Base44 dashboard (e.g. 69eddd3fb35526e88df2b8c1). Used for direct chat connectivity."
     }
   },
   "required": [

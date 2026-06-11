@@ -1,56 +1,168 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, Bot, User, AlertCircle, RefreshCcw } from "lucide-react";
+import { Send, Loader2, Bot, User, AlertCircle, RefreshCcw, Key, ArrowRight } from "lucide-react";
 
-export default function AgentChat({ agentName, agentAvatar }) {
-  const [conversation, setConversation] = useState(null);
+const SUPERAGENT_BASE = "https://app.base44.com/api/agents";
+const LS_API_KEY = "base44_superagent_api_key";
+
+export default function AgentChat({ agentName, agentAvatar, superagentId }) {
+  const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [connecting, setConnecting] = useState(true);
   const [error, setError] = useState(null);
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem(LS_API_KEY) || "");
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const bottomRef = useRef(null);
-  const unsubRef = useRef(null);
+  const pollRef = useRef(null);
 
-  const connect = async () => {
+  const isSuperagent = !!superagentId;
+
+  // ─── In-app agent: SDK-based ──────────────────────────────────────────
+  const connectInApp = async () => {
     setConnecting(true);
     setError(null);
     try {
       const conv = await base44.agents.createConversation({ agent_name: agentName });
-      setConversation(conv);
+      setConversationId(conv.id);
       setMessages(conv.messages || []);
-
-      // Subscribe to real-time updates
-      if (unsubRef.current) unsubRef.current();
-      unsubRef.current = base44.agents.subscribeToConversation(conv.id, (updated) => {
-        setMessages([...(updated.messages || [])]);
-      });
     } catch (e) {
-      setError(`Could not connect to agent "${agentName}". Make sure this agent exists in your Base44 app.`);
+      setError(`Agent "${agentName}" not found. If this is a Superagent, enter its ID in the agent profile's "Superagent ID" field.`);
     } finally {
       setConnecting(false);
     }
   };
 
+  // ─── Superagent: REST API ─────────────────────────────────────────────
+  const connectSuperagent = async () => {
+    if (!apiKey) {
+      setShowApiKeyInput(true);
+      setConnecting(false);
+      return;
+    }
+    setConnecting(true);
+    setError(null);
+    try {
+      const res = await fetch(`${SUPERAGENT_BASE}/${superagentId}/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "api_key": apiKey },
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || `HTTP ${res.status}`);
+      }
+      const conv = await res.json();
+      setConversationId(conv.id);
+      setMessages(conv.messages || []);
+    } catch (e) {
+      setError(`Could not connect to superagent: ${e.message}`);
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const connect = () => {
+    if (isSuperagent) connectSuperagent();
+    else connectInApp();
+  };
+
   useEffect(() => {
     connect();
-    return () => { if (unsubRef.current) unsubRef.current(); };
-  }, [agentName]);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [agentName, superagentId]);
 
+  // ─── Polling for superagent replies ───────────────────────────────────
+  useEffect(() => {
+    if (!isSuperagent || !conversationId || !apiKey) return;
+    if (pollRef.current) clearInterval(pollRef.current);
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`${SUPERAGENT_BASE}/${superagentId}/conversations/${conversationId}`, {
+          headers: { "api_key": apiKey },
+        });
+        if (!res.ok) return;
+        const conv = await res.json();
+        setMessages(conv.messages || []);
+      } catch { /* ignore polling errors */ }
+    }, 2000);
+
+    return () => clearInterval(pollRef.current);
+  }, [isSuperagent, superagentId, conversationId, apiKey]);
+
+  // ─── Scroll to bottom ─────────────────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ─── Send message ─────────────────────────────────────────────────────
   const sendMessage = async () => {
-    if (!input.trim() || !conversation || sending) return;
+    if (!input.trim() || sending) return;
     const text = input.trim();
     setInput("");
     setSending(true);
-    await base44.agents.addMessage(conversation, { role: "user", content: text });
+
+    if (isSuperagent && conversationId && apiKey) {
+      try {
+        await fetch(`${SUPERAGENT_BASE}/${superagentId}/conversations/${conversationId}/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "api_key": apiKey },
+          body: JSON.stringify({ role: "user", content: text }),
+        });
+      } catch (e) {
+        setError(`Send failed: ${e.message}`);
+      }
+    } else if (conversationId) {
+      try {
+        const conv = { id: conversationId, messages };
+        await base44.agents.addMessage(conv, { role: "user", content: text });
+      } catch (e) {
+        setError(`Send failed: ${e.message}`);
+      }
+    }
     setSending(false);
   };
 
+  // ─── Save API key ─────────────────────────────────────────────────────
+  const saveApiKey = () => {
+    localStorage.setItem(LS_API_KEY, apiKey);
+    setShowApiKeyInput(false);
+    connectSuperagent();
+  };
+
+  // ─── API Key input screen ─────────────────────────────────────────────
+  if (showApiKeyInput) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4 text-center px-4">
+        <Key className="w-8 h-8 text-[#00FF66]" />
+        <p className="text-sm text-slate-300 font-semibold" style={{ fontFamily: "Chivo, sans-serif" }}>
+          Enter your Superagent API Key
+        </p>
+        <p className="text-xs text-slate-500">
+          Find this in your Superagent → Customize → Developer → API docs
+        </p>
+        <div className="flex gap-2 w-full max-w-sm">
+          <input
+            className="input-dark flex-1 font-mono text-sm"
+            type="password"
+            placeholder="Paste API key…"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && saveApiKey()}
+            autoFocus
+          />
+          <button onClick={saveApiKey} disabled={!apiKey.trim()}
+            className="cta-primary px-3 py-2 rounded-lg flex items-center gap-1 disabled:opacity-40">
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Connecting spinner ───────────────────────────────────────────────
   if (connecting) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
@@ -60,21 +172,31 @@ export default function AgentChat({ agentName, agentAvatar }) {
     );
   }
 
+  // ─── Error state ──────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4 text-center px-4">
         <AlertCircle className="w-8 h-8 text-red-500" />
-        <p className="text-sm text-slate-400">{error}</p>
-        <button onClick={connect}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[#00FF66]"
-          style={{ border: "1px solid rgba(0,255,102,0.3)", background: "rgba(0,255,102,0.05)" }}>
-          <RefreshCcw className="w-3.5 h-3.5" /> Retry
-        </button>
+        <p className="text-sm text-slate-400 max-w-md">{error}</p>
+        <div className="flex gap-2">
+          <button onClick={connect}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[#00FF66]"
+            style={{ border: "1px solid rgba(0,255,102,0.3)", background: "rgba(0,255,102,0.05)" }}>
+            <RefreshCcw className="w-3.5 h-3.5" /> Retry
+          </button>
+          {isSuperagent && (
+            <button onClick={() => { setShowApiKeyInput(true); setError(null); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-300"
+              style={{ border: "1px solid #2A2F3A", background: "#1A1D24" }}>
+              <Key className="w-3.5 h-3.5" /> Change API Key
+            </button>
+          )}
+        </div>
       </div>
     );
   }
 
-  // Render only user + assistant messages
+  // ─── Messages ─────────────────────────────────────────────────────────
   const visible = messages.filter((m) => m.role === "user" || m.role === "assistant");
 
   return (
@@ -95,7 +217,6 @@ export default function AgentChat({ agentName, agentAvatar }) {
               animate={{ opacity: 1, y: 0 }}
               className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
             >
-              {/* Avatar */}
               <div className="flex-shrink-0 mt-1">
                 {msg.role === "assistant" ? (
                   <img src={agentAvatar} alt={agentName}
@@ -108,7 +229,6 @@ export default function AgentChat({ agentName, agentAvatar }) {
                 )}
               </div>
 
-              {/* Bubble */}
               <div className={`max-w-[80%] px-4 py-2.5 rounded-xl text-sm leading-relaxed ${
                 msg.role === "user"
                   ? "text-black font-medium"
@@ -159,6 +279,15 @@ export default function AgentChat({ agentName, agentAvatar }) {
         >
           <Send className="w-4 h-4" />
         </button>
+        {isSuperagent && (
+          <button
+            onClick={() => setShowApiKeyInput(true)}
+            className="px-2 py-2 rounded-lg text-slate-500 hover:text-slate-300 flex-shrink-0"
+            title="Change API key"
+          >
+            <Key className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );
