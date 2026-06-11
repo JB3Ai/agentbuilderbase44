@@ -48,6 +48,7 @@ export default function AgentChat({ agentName, agentAvatar, superagentId }) {
       const res = await fetch(`${SUPERAGENT_BASE}/${superagentId}/conversations`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "api_key": apiKey },
+        body: JSON.stringify({ name: `Chat with ${agentName}`, description: "AgentBuilder conversation" }),
       });
       if (!res.ok) {
         const txt = await res.text();
