@@ -242,9 +242,9 @@ module.exports = AGENT_DEF;
             <code className="text-xs text-[#00FF66] font-mono bg-[#0D0F14] px-2 py-0.5 rounded">{agent.superagent_id}</code>
           </div>
         ) : (
-          <div className="flex items-center gap-2 mb-4 text-sm text-amber-400">
-            <AlertCircle className="w-4 h-4" />
-            No Superagent ID linked. Add one in the Profile tab.
+          <div className="flex items-center gap-2 mb-4 text-sm text-blue-400">
+            <Zap className="w-4 h-4" />
+            Not yet on Superagent — sync will create it automatically.
           </div>
         )}
 
@@ -252,7 +252,7 @@ module.exports = AGENT_DEF;
         <div className="flex gap-3 mb-4">
           <button
             onClick={syncWithSuperagent}
-            disabled={superagentSyncing || !agent.superagent_id}
+            disabled={superagentSyncing}
             className="cta-primary px-4 py-2 rounded-lg text-sm flex items-center gap-2 disabled:opacity-40"
           >
             {superagentSyncing ? (

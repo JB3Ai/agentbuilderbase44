@@ -94,9 +94,42 @@ Deno.serve(async (req) => {
     }
 
     if (!localAgent.superagent_id) {
+      // ── Create agent in Superagent ──
+      const createRes = await fetch(SUPERAGENT_BASE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          api_key: resolvedApiKey,
+        },
+        body: JSON.stringify({
+          name: localAgent.name,
+          role: localAgent.role || "",
+          personality: localAgent.personality || "",
+        }),
+      });
+
+      if (!createRes.ok) {
+        const errText = await createRes.text();
+        return Response.json(
+          { error: `Failed to create agent in Superagent (${createRes.status}): ${errText}` },
+          { status: 502 }
+        );
+      }
+
+      const created = await createRes.json();
+
+      // Save the superagent_id back to Nexus
+      await base44.entities.Agent.update(localAgent.id, {
+        superagent_id: created.id,
+        is_syncing: true,
+        superagent_synced_at: new Date().toISOString(),
+      });
+
       return Response.json({
-        status: "no_superagent",
-        message: "This agent has no Superagent ID linked. Add one in the Profile tab.",
+        status: "created",
+        direction: "push",
+        message: `Created "${localAgent.name}" in Superagent and linked. Ready to sync.`,
+        superagent_id: created.id,
       });
     }
 
