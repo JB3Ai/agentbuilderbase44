@@ -38,25 +38,69 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── Batch mode: sync all linked agents ──
+    // ── Batch mode: sync all agents (linked + unlinked) ──
     if (mode === "batch" || (!agentId && mode !== "single")) {
       const allAgents = await base44.entities.Agent.list("-updated_date", 100);
       const linked = allAgents.filter(a => a.superagent_id);
+      const unlinked = allAgents.filter(a => !a.superagent_id);
       
-      const results = [];
+      const results = { pulled: [], pushed: [], created: [], skipped: [], failed: [], inSync: 0 };
+      
+      // ── Create unlinked agents in Superagent ──
+      for (const localAgent of unlinked) {
+        try {
+          const createRes = await fetch(SUPERAGENT_BASE, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              api_key: resolvedApiKey,
+            },
+            body: JSON.stringify({ name: localAgent.name }),
+          });
+          
+          if (!createRes.ok) {
+            results.failed.push({ name: localAgent.name, reason: `Create failed (${createRes.status})` });
+            continue;
+          }
+          
+          const created = await createRes.json();
+          await base44.entities.Agent.update(localAgent.id, {
+            superagent_id: created.id,
+            is_syncing: true,
+            superagent_synced_at: new Date().toISOString(),
+          });
+          results.created.push({ name: localAgent.name, superagent_id: created.id });
+        } catch (e) {
+          results.failed.push({ name: localAgent.name, reason: e.message });
+        }
+      }
+      
+      // ── Sync linked agents ──
       for (const localAgent of linked) {
         try {
           const remoteRes = await fetch(
             `${SUPERAGENT_BASE}/${localAgent.superagent_id}`,
             { headers: { api_key: resolvedApiKey } }
           );
-          if (!remoteRes.ok) continue;
+          
+          if (!remoteRes.ok) {
+            results.failed.push({ name: localAgent.name, reason: `Remote fetch failed (${remoteRes.status})` });
+            continue;
+          }
           
           const remoteAgent = await remoteRes.json();
           const localHash = hash(localAgent);
           const remoteHash = hash(remoteAgent);
           
-          if (localHash === remoteHash) continue;
+          if (localHash === remoteHash) {
+            // Touch sync timestamp even when in sync
+            await base44.entities.Agent.update(localAgent.id, {
+              is_syncing: true,
+              superagent_synced_at: new Date().toISOString(),
+            });
+            results.inSync++;
+            continue;
+          }
           
           const localUpdated = new Date(localAgent.updated_date).getTime();
           const remoteUpdated = new Date(remoteAgent.updated_date || 0).getTime();
@@ -72,15 +116,54 @@ Deno.serve(async (req) => {
               is_syncing: true,
               superagent_synced_at: new Date().toISOString(),
             });
-            results.push({ name: localAgent.name, direction: "pull" });
+            results.pulled.push({ name: localAgent.name });
+          } else {
+            // Push: Nexus is newer — recreate in Superagent to push changes
+            try {
+              // Delete existing Superagent agent
+              await fetch(`${SUPERAGENT_BASE}/${localAgent.superagent_id}`, {
+                method: "DELETE",
+                headers: { api_key: resolvedApiKey },
+              });
+              // Recreate with current data
+              const recreateRes = await fetch(SUPERAGENT_BASE, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  api_key: resolvedApiKey,
+                },
+                body: JSON.stringify({ name: localAgent.name }),
+              });
+              if (recreateRes.ok) {
+                const recreated = await recreateRes.json();
+                await base44.entities.Agent.update(localAgent.id, {
+                  superagent_id: recreated.id,
+                  is_syncing: true,
+                  superagent_synced_at: new Date().toISOString(),
+                });
+                results.pushed.push({ name: localAgent.name, new_id: recreated.id });
+              } else {
+                results.skipped.push({ name: localAgent.name, reason: `Recreate failed (${recreateRes.status})` });
+              }
+            } catch {
+              results.skipped.push({ name: localAgent.name, reason: "Push recreate failed" });
+            }
           }
-        } catch { /* skip individual failures */ }
+        } catch {
+          results.failed.push({ name: localAgent.name, reason: "Unexpected error" });
+        }
       }
       
+      const total = results.pulled.length + results.pushed.length + results.created.length;
       return Response.json({
         status: "batch_done",
-        synced: results.length,
-        results,
+        synced: total,
+        inSync: results.inSync,
+        pulled: results.pulled,
+        pushed: results.pushed,
+        created: results.created,
+        skipped: results.skipped,
+        failed: results.failed,
       });
     }
 

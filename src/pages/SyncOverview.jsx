@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { RefreshCcw, CheckCircle2, AlertTriangle, Link, Unlink, Clock, Zap, ArrowRight } from "lucide-react";
+import { RefreshCcw, CheckCircle2, AlertTriangle, Link, Unlink, Clock, Zap, ArrowRight, ArrowUp, ArrowDown, PlusCircle, XCircle } from "lucide-react";
 import AgentAvatar from "@/components/agents/AgentAvatar";
 
 const StatusBadge = ({ label, color, icon: Icon }) => (
@@ -154,27 +154,115 @@ export default function SyncOverview() {
 
         {/* Batch sync result */}
         {syncResult && (
-          <div
-            className="mb-6 p-4 rounded-lg"
-            style={{
-              background: syncResult.error
-                ? "rgba(239,68,68,0.05)"
-                : "rgba(0,255,102,0.04)",
-              border: `1px solid ${syncResult.error ? "rgba(239,68,68,0.25)" : "rgba(0,255,102,0.2)"}`,
-            }}
-          >
+          <div className="mb-6 space-y-3">
             {syncResult.error ? (
-              <div className="flex items-center gap-2 text-sm text-red-400">
-                <AlertTriangle className="w-4 h-4" />
-                {syncResult.error}
+              <div
+                className="p-4 rounded-lg"
+                style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.25)" }}
+              >
+                <div className="flex items-center gap-2 text-sm text-red-400">
+                  <AlertTriangle className="w-4 h-4" />
+                  {syncResult.error}
+                </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-sm text-[#00FF66]">
-                <CheckCircle2 className="w-4 h-4" />
-                {syncResult.synced > 0
-                  ? `${syncResult.synced} agent(s) synced.`
-                  : "All agents already in sync."}
-              </div>
+              <>
+                {/* Summary banner */}
+                <div
+                  className="p-4 rounded-lg flex items-center gap-3"
+                  style={{ background: "rgba(0,255,102,0.04)", border: "1px solid rgba(0,255,102,0.2)" }}
+                >
+                  <CheckCircle2 className="w-5 h-5 text-[#00FF66] flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#00FF66]">
+                      Batch sync complete
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {syncResult.synced > 0
+                        ? `${syncResult.synced} agent(s) synced · ${syncResult.inSync || 0} already in sync`
+                        : "All agents in sync"}
+                      {syncResult.failed?.length > 0 && ` · ${syncResult.failed.length} failed`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Detail cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {syncResult.created?.length > 0 && (
+                    <div className="panel p-3 flex items-center gap-2">
+                      <PlusCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-blue-400">{syncResult.created.length}</p>
+                        <p className="text-xs text-slate-500">Created</p>
+                      </div>
+                    </div>
+                  )}
+                  {syncResult.pulled?.length > 0 && (
+                    <div className="panel p-3 flex items-center gap-2">
+                      <ArrowDown className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-purple-400">{syncResult.pulled.length}</p>
+                        <p className="text-xs text-slate-500">Pulled</p>
+                      </div>
+                    </div>
+                  )}
+                  {syncResult.pushed?.length > 0 && (
+                    <div className="panel p-3 flex items-center gap-2">
+                      <ArrowUp className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-blue-400">{syncResult.pushed.length}</p>
+                        <p className="text-xs text-slate-500">Pushed</p>
+                      </div>
+                    </div>
+                  )}
+                  {syncResult.skipped?.length > 0 && (
+                    <div className="panel p-3 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-amber-400">{syncResult.skipped.length}</p>
+                        <p className="text-xs text-slate-500">Skipped</p>
+                      </div>
+                    </div>
+                  )}
+                  {syncResult.failed?.length > 0 && (
+                    <div className="panel p-3 flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-red-400">{syncResult.failed.length}</p>
+                        <p className="text-xs text-slate-500">Failed</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Failed details */}
+                {syncResult.failed?.length > 0 && (
+                  <div className="panel p-3">
+                    <p className="text-xs font-bold text-red-400 mb-2">Failed agents:</p>
+                    {syncResult.failed.map((f, i) => (
+                      <div key={i} className="text-xs text-slate-400 flex items-center gap-2 py-1">
+                        <XCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
+                        <span className="text-white">{f.name}</span>
+                        <span className="text-slate-600">— {f.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Skipped details */}
+                {syncResult.skipped?.length > 0 && (
+                  <div className="panel p-3">
+                    <p className="text-xs font-bold text-amber-400 mb-2">Skipped (push failed, not recreated):</p>
+                    {syncResult.skipped.map((s, i) => (
+                      <div key={i} className="text-xs text-slate-400 flex items-center gap-2 py-1">
+                        <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                        <span className="text-white">{s.name}</span>
+                        <span className="text-slate-600">— {s.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
