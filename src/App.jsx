@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Dashboard from "./pages/Dashboard";
 import RepoExplorer from "./pages/RepoExplorer";
 import VoiceGrid from "./pages/VoiceGrid";
+import SyncOverview from "./pages/SyncOverview";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -40,6 +41,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Dashboard />} />
       <Route path="/repos" element={<RepoExplorer />} />
       <Route path="/voicegrid" element={<VoiceGrid />} />
+      <Route path="/sync" element={<SyncOverview />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
