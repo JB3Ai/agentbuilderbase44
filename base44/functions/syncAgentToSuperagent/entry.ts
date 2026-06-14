@@ -30,7 +30,7 @@ function compileSoul(agent) {
 
 // Fields used for hash comparison (name + compiled soul)
 function hash(agent) {
-  return JSON.stringify({ name: agent.name, soul: compileSoul(agent) });
+  return JSON.stringify({ name: (agent.name || "").trim(), soul: compileSoul(agent) });
 }
 
 Deno.serve(async (req) => {
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
               api_key: resolvedApiKey,
             },
             body: JSON.stringify({
-              name: localAgent.name,
+              name: (localAgent.name || "").trim(),
               description: compileSoul(localAgent),
             }),
           });
@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
           const remoteAgent = await remoteRes.json();
           const localHash = hash(localAgent);
           // Remote hash: compare name + description (which holds the compiled soul)
-          const remoteHash = JSON.stringify({ name: remoteAgent.name, soul: remoteAgent.description || "" });
+          const remoteHash = JSON.stringify({ name: (remoteAgent.name || "").trim(), soul: remoteAgent.description || "" });
           
           if (localHash === remoteHash) {
             await base44.entities.Agent.update(localAgent.id, {
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
                   api_key: resolvedApiKey,
                 },
                 body: JSON.stringify({
-                  name: localAgent.name,
+                  name: (localAgent.name || "").trim(),
                   description: compileSoul(localAgent),
                 }),
               }
@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
                     api_key: resolvedApiKey,
                   },
                   body: JSON.stringify({
-                    name: localAgent.name,
+                    name: (localAgent.name || "").trim(),
                     description: compileSoul(localAgent),
                   }),
                 });
@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
           api_key: resolvedApiKey,
         },
         body: JSON.stringify({
-          name: localAgent.name,
+          name: (localAgent.name || "").trim(),
           description: compiledSoul,
         }),
       });
@@ -281,6 +281,7 @@ Deno.serve(async (req) => {
       return Response.json({
         status: "in_sync",
         message: "Already in sync. No changes needed.",
+        remote_description: remoteAgent.description || "",
       });
     }
 
@@ -299,7 +300,7 @@ Deno.serve(async (req) => {
             api_key: resolvedApiKey,
           },
           body: JSON.stringify({
-            name: localAgent.name,
+            name: (localAgent.name || "").trim(),
             description: compiledSoul,
           }),
         }
@@ -331,7 +332,7 @@ Deno.serve(async (req) => {
           api_key: resolvedApiKey,
         },
         body: JSON.stringify({
-          name: localAgent.name,
+          name: (localAgent.name || "").trim(),
           description: compiledSoul,
         }),
       });
