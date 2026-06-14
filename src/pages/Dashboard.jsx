@@ -377,9 +377,14 @@ export default function Dashboard() {
   };
 
   const seedIfEmpty = async () => {
-    const existing = await loadAgents();
-    setAgents(sortByRegistry(existing));
-    setLoading(false);
+    try {
+      const existing = await loadAgents();
+      setAgents(sortByRegistry(existing));
+    } catch (err) {
+      console.error("Failed to load agents:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { seedIfEmpty(); }, []);
