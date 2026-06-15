@@ -471,22 +471,7 @@ export default function Dashboard() {
           <AgentSummaryDashboard agents={agents} />
         )}
 
-        {/* Credit Tier Tracker */}
-        {!loading && (
-          <CreditTierDashboard agents={agents} tasks={tasks} />
-        )}
-
-        {/* Task Pipeline — Dual-Layer Board */}
-        {!loading && (
-          <TaskPipeline agents={agents} onOpenAgent={setSelected} />
-        )}
-
-        {/* Task Pulse Tracker */}
-        {!loading && agents.length > 0 && (
-          <TaskTracker agents={agents} onOpenAgent={setSelected} />
-        )}
-
-        {/* Agent Diagram Grid */}
+        {/* Agent Card Grid */}
         <div className="mb-10 panel overflow-hidden">
           <button
             onClick={() => setShowCardGrid(!showCardGrid)}
@@ -550,11 +535,6 @@ export default function Dashboard() {
           </AnimatePresence>
         </div>
 
-        {/* Agent Data Table — Control Center */}
-        {!loading && agents.length > 0 && (
-          <AgentDataTable agents={agents} onRefresh={refresh} />
-        )}
-
         {/* Dependency Graph */}
         <div className="mb-10 panel overflow-hidden">
           <button
@@ -590,10 +570,30 @@ export default function Dashboard() {
           </AnimatePresence>
         </div>
 
+        {/* Agent Data Table — Control Center */}
+        {!loading && agents.length > 0 && (
+          <AgentDataTable agents={agents} onRefresh={refresh} />
+        )}
+
         {/* Weekly Review Reminders */}
         <div className="mb-8">
           <WeeklyReviewPanel agents={agents} />
         </div>
+
+        {/* Task Pipeline — Dual-Layer Board */}
+        {!loading && (
+          <TaskPipeline agents={agents} onOpenAgent={setSelected} />
+        )}
+
+        {/* Credit Tier Tracker */}
+        {!loading && (
+          <CreditTierDashboard agents={agents} tasks={tasks} />
+        )}
+
+        {/* Task Pulse Tracker */}
+        {!loading && agents.length > 0 && (
+          <TaskTracker agents={agents} onOpenAgent={setSelected} />
+        )}
       </main>
 
       {/* Agent Profile Overlay */}
