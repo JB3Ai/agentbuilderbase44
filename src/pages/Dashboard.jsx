@@ -12,6 +12,7 @@ import BulkActionBar from "@/components/agents/BulkActionBar";
 import TemplateLibrary from "@/components/agents/TemplateLibrary";
 import AgentSummaryDashboard from "@/components/agents/AgentSummaryDashboard";
 import TaskTracker from "@/components/agents/TaskTracker";
+import TaskPipeline from "@/components/agents/TaskPipeline";
 import AgentDataTable from "@/components/agents/AgentDataTable";
 
 const SEED_AGENTS = [
@@ -461,6 +462,11 @@ export default function Dashboard() {
         {/* Summary Dashboard */}
         {!loading && agents.length > 0 && (
           <AgentSummaryDashboard agents={agents} />
+        )}
+
+        {/* Task Pipeline — Dual-Layer Board */}
+        {!loading && (
+          <TaskPipeline agents={agents} onOpenAgent={setSelected} />
         )}
 
         {/* Task Pulse Tracker */}

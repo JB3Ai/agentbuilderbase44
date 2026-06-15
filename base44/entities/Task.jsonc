@@ -1,0 +1,59 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Short task title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Task details"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_approval",
+        "in_progress",
+        "in_review",
+        "complete",
+        "stalled"
+      ],
+      "default": "pending_approval"
+    },
+    "owner_agent": {
+      "type": "string",
+      "description": "Name of the agent responsible for execution"
+    },
+    "approver_agent": {
+      "type": "string",
+      "description": "Name of the agent responsible for final approval"
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Global scoping for organizational tasks"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Consolidated JSON output from procedural skill pipelines (Chain-of-Thought results)"
+    },
+    "model_tier": {
+      "type": "string",
+      "enum": [
+        "automatic",
+        "premium"
+      ],
+      "default": "automatic",
+      "description": "Determines the credit burn rate for agent operations"
+    },
+    "priority": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "title",
+    "owner_agent",
+    "status"
+  ]
+}
