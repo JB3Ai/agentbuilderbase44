@@ -13,6 +13,7 @@ import TemplateLibrary from "@/components/agents/TemplateLibrary";
 import AgentSummaryDashboard from "@/components/agents/AgentSummaryDashboard";
 import TaskTracker from "@/components/agents/TaskTracker";
 import TaskPipeline from "@/components/agents/TaskPipeline";
+import CreditTierDashboard from "@/components/agents/CreditTierDashboard";
 import AgentDataTable from "@/components/agents/AgentDataTable";
 
 const SEED_AGENTS = [
@@ -370,6 +371,7 @@ export default function Dashboard() {
   const [showSettings, setShowSettings] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
 
   const loadAgents = async () => {
@@ -381,6 +383,8 @@ export default function Dashboard() {
     try {
       const existing = await loadAgents();
       setAgents(sortByRegistry(existing));
+      const tasksData = await base44.entities.Task.list("-created_date", 50);
+      setTasks(tasksData);
     } catch (err) {
       console.error("Failed to load agents:", err);
     } finally {
@@ -462,6 +466,11 @@ export default function Dashboard() {
         {/* Summary Dashboard */}
         {!loading && agents.length > 0 && (
           <AgentSummaryDashboard agents={agents} />
+        )}
+
+        {/* Credit Tier Tracker */}
+        {!loading && (
+          <CreditTierDashboard agents={agents} tasks={tasks} />
         )}
 
         {/* Task Pipeline — Dual-Layer Board */}
