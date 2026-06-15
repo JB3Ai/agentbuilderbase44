@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, ChevronUp, LayoutGrid, GitMerge } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import Header from "@/components/agents/Header";
 import SettingsPanel from "@/components/agents/SettingsPanel";
@@ -373,6 +374,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [showCardGrid, setShowCardGrid] = useState(true);
+  const [showDepGraph, setShowDepGraph] = useState(true);
 
   const loadAgents = async () => {
     const data = await base44.entities.Agent.list("-created_date", 50);
@@ -484,36 +487,68 @@ export default function Dashboard() {
         )}
 
         {/* Agent Diagram Grid */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="panel p-5 animate-pulse">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-xl bg-slate-800" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-slate-800 rounded w-3/4" />
-                    <div className="h-3 bg-slate-800 rounded w-1/2" />
-                  </div>
-                </div>
-                <div className="h-3 bg-slate-800 rounded w-full mb-2" />
-                <div className="h-3 bg-slate-800 rounded w-2/3" />
+        <div className="mb-10 panel overflow-hidden">
+          <button
+            onClick={() => setShowCardGrid(!showCardGrid)}
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#1A1D24] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <LayoutGrid className="w-4 h-4 text-[#00FF66]" />
+              <div>
+                <p className="text-white font-semibold text-sm" style={{ fontFamily: "Chivo, sans-serif" }}>Agent Card Grid</p>
+                <p className="text-xs text-slate-500 mt-0.5">{agents.length} agents deployed</p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
-            {agents.map((agent, idx) => (
-              <AgentDiagramCard
-                key={agent.id}
-                agent={agent}
-                index={idx}
-                onOpen={setSelected}
-                selected={selectedIds.includes(agent.id)}
-                onSelect={toggleSelect}
-              />
-            ))}
-          </div>
-        )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-600">{showCardGrid ? "Collapse" : "Expand"}</span>
+              {showCardGrid ? <ChevronUp className="w-4 h-4 text-slate-600" /> : <ChevronDown className="w-4 h-4 text-slate-600" />}
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {showCardGrid && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div style={{ borderTop: "1px solid #20242C" }}>
+                  {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-4">
+                      {[...Array(6)].map((_, i) => (
+                        <div key={i} className="panel p-5 animate-pulse">
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="w-14 h-14 rounded-xl bg-slate-800" />
+                            <div className="flex-1 space-y-2">
+                              <div className="h-4 bg-slate-800 rounded w-3/4" />
+                              <div className="h-3 bg-slate-800 rounded w-1/2" />
+                            </div>
+                          </div>
+                          <div className="h-3 bg-slate-800 rounded w-full mb-2" />
+                          <div className="h-3 bg-slate-800 rounded w-2/3" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-4">
+                      {agents.map((agent, idx) => (
+                        <AgentDiagramCard
+                          key={agent.id}
+                          agent={agent}
+                          index={idx}
+                          onOpen={setSelected}
+                          selected={selectedIds.includes(agent.id)}
+                          onSelect={toggleSelect}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Agent Data Table — Control Center */}
         {!loading && agents.length > 0 && (
@@ -521,11 +556,39 @@ export default function Dashboard() {
         )}
 
         {/* Dependency Graph */}
-        {!loading && agents.length > 0 && (
-          <div className="mb-10">
-            <DependencyGraph agents={agents} />
-          </div>
-        )}
+        <div className="mb-10 panel overflow-hidden">
+          <button
+            onClick={() => setShowDepGraph(!showDepGraph)}
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#1A1D24] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <GitMerge className="w-4 h-4 text-[#00FF66]" />
+              <div>
+                <p className="text-white font-semibold text-sm" style={{ fontFamily: "Chivo, sans-serif" }}>Dependency Graph</p>
+                <p className="text-xs text-slate-500 mt-0.5">Agent-to-agent workflow triggers</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-600">{showDepGraph ? "Collapse" : "Expand"}</span>
+              {showDepGraph ? <ChevronUp className="w-4 h-4 text-slate-600" /> : <ChevronDown className="w-4 h-4 text-slate-600" />}
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {showDepGraph && !loading && agents.length > 0 && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div style={{ borderTop: "1px solid #20242C" }}>
+                  <DependencyGraph agents={agents} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Weekly Review Reminders */}
         <div className="mb-8">
