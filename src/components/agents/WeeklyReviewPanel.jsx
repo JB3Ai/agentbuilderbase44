@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Plus, X, Calendar, Clock, CheckCircle2, ChevronRight, Loader2, Sparkles, Trash2 } from "lucide-react";
+import { Bell, Plus, X, Calendar, Clock, CheckCircle2, ChevronRight, Loader2, Sparkles, Trash2, CalendarPlus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format, addDays, nextDay, parseISO, isToday, isPast } from "date-fns";
 
@@ -31,6 +31,7 @@ export default function WeeklyReviewPanel({ agents }) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(null);
+  const [syncing, setSyncing] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
 
   const [form, setForm] = useState({
@@ -79,6 +80,20 @@ export default function WeeklyReviewPanel({ agents }) {
     e.stopPropagation();
     await base44.entities.WeeklyReview.update(review.id, { status: "completed" });
     await loadReviews();
+  };
+
+  const handleAddToCalendar = async (review) => {
+    setSyncing(review.id);
+    try {
+      const res = await base44.functions.invoke("createCalendarReview", { reviewId: review.id });
+      if (res.data?.htmlLink) {
+        window.open(res.data.htmlLink, "_blank");
+      }
+    } catch (e) {
+      console.error("Calendar sync failed:", e);
+    } finally {
+      setSyncing(null);
+    }
   };
 
   const handleGenerateBrief = async (review) => {
@@ -315,6 +330,15 @@ Be concise, direct, and actionable. Format as a compact briefing document.`,
 
                       {/* Actions */}
                       <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => handleAddToCalendar(review)}
+                          disabled={syncing === review.id}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-blue-400 transition-colors disabled:opacity-50"
+                          style={{ border: "1px solid rgba(147,197,253,0.3)", background: "rgba(147,197,253,0.05)" }}
+                        >
+                          {syncing === review.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CalendarPlus className="w-3.5 h-3.5" />}
+                          {syncing === review.id ? "Adding…" : "Add to Calendar"}
+                        </button>
                         <button
                           onClick={() => handleGenerateBrief(review)}
                           disabled={generating === review.id}
