@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Command, Zap, Github, Settings } from "lucide-react";
+import { Command, Zap, Github, Settings, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Phone } from "lucide-react";
 
@@ -54,6 +54,12 @@ export default function Header({ onQuickCommand, onOpenSettings }) {
           <Settings className="w-3.5 h-3.5" />
           Settings
         </button>
+        <Link to="/verify"
+          className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors"
+          style={{ border: "1px solid #20242C" }}>
+          <ShieldCheck className="w-3.5 h-3.5" />
+          Verify
+        </Link>
         <Link to="/repos"
           className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors"
           style={{ border: "1px solid #20242C" }}>
