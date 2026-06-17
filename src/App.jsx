@@ -12,6 +12,7 @@ import RepoExplorer from "./pages/RepoExplorer";
 import VoiceGrid from "./pages/VoiceGrid";
 import SyncOverview from "./pages/SyncOverview";
 import SyncVerification from "./pages/SyncVerification";
+import AgentCleanup from "./pages/AgentCleanup";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -44,6 +45,7 @@ const AuthenticatedApp = () => {
       <Route path="/voicegrid" element={<VoiceGrid />} />
       <Route path="/sync" element={<SyncOverview />} />
       <Route path="/verify" element={<SyncVerification />} />
+      <Route path="/cleanup" element={<AgentCleanup />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
