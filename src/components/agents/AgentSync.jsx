@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { RefreshCcw, Upload, Download, CheckCircle, AlertCircle, ExternalLink, Copy, ArrowRightLeft, ArrowUp, ArrowDown, Zap } from "lucide-react";
+import AgentFilePackExporter from "./AgentFilePackExporter";
 
 const LS_API_KEY = "base44_superagent_api_key";
 
@@ -360,6 +361,9 @@ module.exports = AGENT_DEF;
           </div>
         )}
       </div>
+
+      {/* ── Base44 File Pack Export ── */}
+      <AgentFilePackExporter agent={agent} />
 
       {/* Export section */}
       <div className="panel p-5">
