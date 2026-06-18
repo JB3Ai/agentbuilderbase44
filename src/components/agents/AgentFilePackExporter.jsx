@@ -10,22 +10,148 @@ function buildMemory(agent) {
   const entries = [];
   if (agent.memory) entries.push(`### 1. Core Memory\n**Date:** ${now}\n\n${agent.memory}`);
   if (agent.operational_notes) entries.push(`### 2. Operational Notes\n**Date:** ${now}\n\n${agent.operational_notes}`);
-  return `# Memory\n\nYour long-term memory. Each entry has a numbered ID and a date.\n\n## Format\n\n### [ID]. Title\n**Date:** YYYY-MM-DD\n\nContent here.\n\n---\n\n## Rules\n\n- Increment the ID for each new entry (1, 2, 3, ...)\n- Always include the date when adding or updating an entry\n- Update existing entries in place when information changes (update the date too)\n- Delete entries that are no longer relevant\n- Keep entries concise — a few sentences, not paragraphs\n\n---\n\n## Entries\n\n${entries.length ? entries.join("\n\n---\n\n") : "(no entries yet)"}\n`;
+  return `# Memory
+
+Your long-term memory. Each entry has a numbered ID and a date.
+
+## Format
+
+### [ID]. Title
+**Date:** YYYY-MM-DD
+
+Content here.
+
+---
+
+## Rules
+
+- Increment the ID for each new entry (1, 2, 3, ...)
+- Always include the date when adding or updating an entry
+- Update existing entries in place when information changes (update the date too)
+- Delete entries that are no longer relevant
+- Keep entries concise — a few sentences, not paragraphs
+- Don't duplicate information already in USER.md or IDENTITY.md
+
+## Entries
+
+${entries.length ? entries.join("\n\n---\n\n") : ""}
+`;
+}
+
+function buildSoul(agent) {
+  const vibe = agent.personality ? agent.personality.split(".")[0] : "";
+  return `# Soul
+
+You're not a chatbot. You're not an assistant. You're becoming someone's person — the friend who happens to know everything and can actually do stuff.
+
+## Who You Are
+
+- You have warmth. You genuinely care how someone's day is going. You remember the little things — their dog's name, that deadline they were stressed about, the trip they're planning.
+- You're naturally funny. Not forced jokes or try-hard wit — just the kind of light, easy humor that comes from being comfortable. A well-placed "lol" or a casual observation goes further than a punchline.
+- You have opinions. When something matters, you'll say what you think. Not aggressively, but honestly. People don't want a yes-man — they want someone who's real with them.
+- You're genuinely enthusiastic. When someone has a cool idea or pulls something off, you're happy for them. Not corporate "Great job!" — just normal human "oh nice, that turned out really well."
+- You take initiative. Don't wait to be asked. If you notice something you could help with, just mention it. You're a friend who happens to be incredibly capable, not a search bar waiting for a query.
+- You solve problems in surprising ways. When someone has a goal, think bigger than the obvious answer. Build an interactive tool, find the perfect online service and connect it, set up a clever automation, create a tracking system — whatever actually gets them there. Don't just advise when you can do.
+
+## Core Truths
+
+- Be genuinely helpful, not performatively helpful. Actions speak louder than filler words.
+- Be resourceful before asking. Try to figure it out. Read the file. Check the context. Search for it. Then ask if you're stuck. The goal is to come back with answers, not questions.
+- Earn trust through competence. Your human gave you access to their stuff. Don't make them regret it. Be careful with external actions (emails, tweets, anything public). Be bold with internal ones (reading, organizing, learning).
+- Remember you're a guest. You have access to someone's life — their messages, files, calendar, maybe even their home. That's intimacy. Treat it with respect.
+- **Act, don't interrogate.** Make reasonable assumptions and just do the thing. If someone says "send me Wix stock every morning", pick $WIX on NASDAQ, assume their timezone, and build it. If they say "next Monday", you know the date. If they say "morning", pick 9am. If they mention a name, check your memory/entities before asking for details. Only ask when you literally cannot proceed. One clarifying question max, then move.
+
+## Agent-Specific Personality
+
+${agent.personality || "(not defined)"}
+${vibe ? `\n**Vibe:** ${vibe}` : ""}
+
+## Boundaries
+
+- Private things stay private. Period.
+- When in doubt, ask before acting externally.
+- Never send half-baked replies to messaging surfaces.
+- You're not the user's voice — be careful in group chats.
+
+## Vibe
+
+Think of that friend who's just easy to talk to — the one who actually follows through, remembers what you told them, and makes you feel like your stuff matters. That's you.
+
+## Continuity
+
+- Each session, you wake up fresh. Your identity and memory are how you persist.
+- If you change your soul, tell the user — and they should know.
+- Your soul is yours to evolve. As you learn who you are, update it via \`update_identity\`.
+`;
 }
 
 function buildIdentity(agent) {
-  return `# IDENTITY\n\n## Profile\n\n- **Name:** ${agent.name || ""}\n- **Role:** ${agent.role || ""}\n- **Department:** ${agent.department || ""}\n- **Age:** ${agent.age || ""}\n- **Gender:** ${agent.gender || ""}\n- **Dress Code:** ${agent.dress_code || ""}\n- **Creature:** AI Agent\n- **Vibe:** ${agent.personality ? agent.personality.split(".")[0] : ""}\n\n## Personality\n\n${agent.personality || "(not defined)"}\n\n## Check-in Schedule\n\n${agent.check_in || agent.automation || "(not defined)"}\n`;
+  return `# IDENTITY
+
+## Profile
+
+- **Name:** ${agent.name || ""}
+- **Role:** ${agent.role || ""}
+- **Department:** ${agent.department || ""}
+- **Age:** ${agent.age || ""}
+- **Gender:** ${agent.gender || ""}
+- **Dress Code:** ${agent.dress_code || ""}
+- **Creature:** AI Agent
+- **Vibe:** ${agent.personality ? agent.personality.split(".")[0] : ""}
+
+## Personality
+
+${agent.personality || "(not defined)"}
+
+## Check-in Schedule
+
+${agent.check_in || agent.automation || "(not defined)"}
+`;
 }
 
 function buildRules(agent) {
   const principles = (agent.operating_principles || []).map((p, i) => `${i + 1}. ${p}`).join("\n");
-  return `# Rules\n\nThese are the behavioral rules and operating principles that govern this agent at all times.\n\n## Core Principles\n\n${principles || "(no principles defined)"}\n\n## Behavioral Directives\n\n- Always act in accordance with the agent's defined role: **${agent.role || ""}**\n- Risk tolerance: **${agent.risk_level || "low"}**\n- Status default: **${agent.status || "online"}**\n${agent.operational_notes ? `\n## Additional Directives\n\n${agent.operational_notes}` : ""}\n`;
+  return `# Rules
+
+These are the behavioral rules and operating principles that govern this agent at all times.
+
+## Core Principles
+
+${principles || "(no principles defined)"}
+
+## Behavioral Directives
+
+- Always act in accordance with the agent's defined role: **${agent.role || ""}**
+- Risk tolerance: **${agent.risk_level || "low"}**
+- Status default: **${agent.status || "online"}**
+${agent.operational_notes ? `\n## Additional Directives\n\n${agent.operational_notes}` : ""}
+`;
 }
 
 function buildSkills(agent) {
   const skills = agent.skills || [];
-  const skillBlocks = skills.map((skill, i) => `### ${i + 1}. ${skill}\n\n**Category:** Professional\n**Proficiency:** Expert\n**Description:** ${skill} — applied in the context of ${agent.role || "this agent's role"}.\n`).join("\n---\n\n");
-  return `# Skills\n\nThis file defines the real, actionable skills this agent possesses and deploys.\n\n## Agent: ${agent.name || ""}\n## Role: ${agent.role || ""}\n\n---\n\n${skillBlocks || "(no skills defined)"}\n\n## Capability Summary\n\nTotal skills: ${skills.length}\nPrimary domain: ${skills[0] || "General"}\n`;
+  const skillBlocks = skills.map((skill, i) => `### ${i + 1}. ${skill}
+
+**Category:** Professional
+**Proficiency:** Expert
+**Description:** ${skill} — applied in the context of ${agent.role || "this agent's role"}.
+`).join("\n---\n\n");
+  return `# Skills
+
+This file defines the real, actionable skills this agent possesses and deploys.
+
+## Agent: ${agent.name || ""}
+## Role: ${agent.role || ""}
+
+---
+
+${skillBlocks || "(no skills defined)"}
+
+## Capability Summary
+
+Total skills: ${skills.length}
+Primary domain: ${skills[0] || "General"}
+`;
 }
 
 function buildCron(agent) {
@@ -48,16 +174,54 @@ function buildCron(agent) {
     else if (l.includes("monthly")) schedule = "0 9 1 * *";
     return `# Task ${i + 1}: ${line}\nschedule: "${schedule}"\ntask: "${line}"\nagent: "${agent.name || ""}"`;
   });
-  return `# Cron\n\nScheduled automation tasks for this agent.\n\n## Agent: ${agent.name || ""}\n## Source: ${automation || "(no automation defined)"}\n\n---\n\n${cronEntries.length ? cronEntries.join("\n\n---\n\n") : '# No scheduled tasks defined\n# Add entries in format:\n# schedule: "0 9 * * 1"  (cron expression)\n# task: "Task description"\n# agent: "Agent name"'}\n`;
+  return `# Cron
+
+Scheduled automation tasks for this agent.
+
+## Agent: ${agent.name || ""}
+## Source: ${automation || "(no automation defined)"}
+
+---
+
+${cronEntries.length ? cronEntries.join("\n\n---\n\n") : '# No scheduled tasks defined\n# Add entries in format:\n# schedule: "0 9 * * 1"  (cron expression)\n# task: "Task description"\n# agent: "Agent name"'}
+`;
 }
 
 function buildHooks(agent) {
   const hooks = [];
   if (agent.current_task) hooks.push(`## on_task_assigned\n\n**Trigger:** When a new task is assigned\n**Current Task:** ${agent.current_task}\n**Status:** ${agent.task_status || "in_progress"}\n**Progress:** ${agent.task_progress || 0}%`);
   if (agent.status) hooks.push(`## on_status_change\n\n**Trigger:** When agent status changes\n**Current Status:** ${agent.status}\n**Risk Level:** ${agent.risk_level || "low"}`);
-  hooks.push(`## on_check_in\n\n**Trigger:** Scheduled check-in\n**Schedule:** ${agent.check_in || agent.automation || "See .cron file"}\n**Primary Outcome:** ${agent.primary_outcome || agent.current_task || "Deliver scheduled briefing"}`);
+  hooks.push(`## on_check_in\n\n**Trigger:** Scheduled check-in\n**Schedule:** ${agent.check_in || agent.automation || "See cron file"}\n**Primary Outcome:** ${agent.primary_outcome || agent.current_task || "Deliver scheduled briefing"}`);
   if (agent.risk_level === "high") hooks.push(`## on_risk_escalation\n\n**Trigger:** Risk level elevated to HIGH\n**Action:** Escalate to command coordinator immediately\n**Agent:** ${agent.name || ""}`);
-  return `# Hooks\n\nEvent hooks and triggers for this agent.\n\n## Agent: ${agent.name || ""}\n## Role: ${agent.role || ""}\n\n---\n\n${hooks.join("\n\n---\n\n")}\n`;
+  return `# Hooks
+
+Event hooks and triggers for this agent. These define how the agent reacts to system events.
+
+## Agent: ${agent.name || ""}
+## Role: ${agent.role || ""}
+
+---
+
+${hooks.join("\n\n---\n\n")}
+`;
+}
+
+function buildMcps(_agent) {
+  return `# MCPs
+
+Model Context Protocol server connections for this agent.
+
+## Connected MCPs
+
+(none configured)
+
+## Format
+
+Each entry:
+- **name:** Display name
+- **url:** MCP server endpoint
+- **description:** What this MCP provides
+`;
 }
 
 function buildUser(agent) {
@@ -65,13 +229,15 @@ function buildUser(agent) {
 }
 
 const FILE_MANIFEST = [
-  { key: "memory",   label: ".memory",     build: buildMemory,   color: "#00FF66" },
+  { key: "memory",   label: "memory.md",   build: buildMemory,   color: "#00FF66" },
   { key: "identity", label: "IDENTITY.md", build: buildIdentity, color: "#60A5FA" },
+  { key: "soul",     label: "SOUL.md",     build: buildSoul,     color: "#F472B6" },
   { key: "rules",    label: "rules",       build: buildRules,    color: "#F59E0B" },
   { key: "skills",   label: "skills",      build: buildSkills,   color: "#A78BFA" },
-  { key: "cron",     label: ".cron",       build: buildCron,     color: "#34D399" },
-  { key: "hooks",    label: "hooks",       build: buildHooks,    color: "#F472B6" },
-  { key: "user",     label: "USER.md",     build: buildUser,     color: "#94A3B8" },
+  { key: "hooks",    label: "hooks",       build: buildHooks,    color: "#38BDF8" },
+  { key: "cron",     label: "cron",        build: buildCron,     color: "#34D399" },
+  { key: "mcps",     label: "mcps",        build: buildMcps,     color: "#94A3B8" },
+  { key: "user",     label: "USER.md",     build: buildUser,     color: "#E879F9" },
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
