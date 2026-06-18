@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 // Icon is passed as a prop to Section — no import needed
-import { X, Settings, Save, RotateCcw, Bell, Shield, Palette, Clock, Users } from "lucide-react";
+import { X, Settings, Save, RotateCcw, Bell, Shield, Palette, Clock, Users, ShieldCheck, Wrench } from "lucide-react";
 
 const DEFAULT_SETTINGS = {
   nexus_name: "JB³Ai — OS³ Nexus",
@@ -207,6 +208,34 @@ export default function SettingsPanel({ onClose }) {
                 onChange={e => set("auto_review_time")(e.target.value)} />
             </Field>
           </Section>
+
+          {/* Admin Tools */}
+          <div className="panel p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Settings className="w-4 h-4 text-slate-500" />
+              <p className="text-white font-semibold text-sm" style={{ fontFamily: "Chivo, sans-serif" }}>Admin Tools</p>
+            </div>
+            <div className="space-y-2">
+              <Link to="/verify" onClick={onClose}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm text-slate-300 hover:text-white transition-colors"
+                style={{ background: "#101319", border: "1px solid #1E2128" }}>
+                <ShieldCheck className="w-4 h-4 text-[#00FF66]" />
+                <div>
+                  <p className="font-medium">Sync Verification</p>
+                  <p className="text-xs text-slate-500">Audit agent sync status against Superagent</p>
+                </div>
+              </Link>
+              <Link to="/cleanup" onClick={onClose}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm text-slate-300 hover:text-white transition-colors"
+                style={{ background: "#101319", border: "1px solid #1E2128" }}>
+                <Wrench className="w-4 h-4 text-[#F59E0B]" />
+                <div>
+                  <p className="font-medium">Agent Cleanup</p>
+                  <p className="text-xs text-slate-500">Remove duplicates and restore missing agents</p>
+                </div>
+              </Link>
+            </div>
+          </div>
 
           {/* Notifications */}
           <Section icon={Bell} title="Notifications">
