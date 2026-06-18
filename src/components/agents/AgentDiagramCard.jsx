@@ -244,10 +244,10 @@ export default function AgentDiagramCard({ agent, onOpen, selected, onSelect, in
       {/* Number badge + WhatsApp indicator */}
       {typeof index === "number" && (
         <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
-          {agent.whatsapp_number && (
+          {agent.superagent_id && (
             <div className="w-4 h-4 rounded flex items-center justify-center"
               style={{ background: "rgba(37,211,102,0.12)", border: "1px solid rgba(37,211,102,0.25)" }}
-              title={`WhatsApp: ${agent.whatsapp_number}`}>
+              title="WhatsApp connected">
               <MessageCircle className="w-2.5 h-2.5 text-[#25D366]" />
             </div>
           )}
