@@ -40,9 +40,29 @@ export default function AgentProfile({ agent, onClose, onSave }) {
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
+  const downloadMemoryFile = (agentForm) => {
+    if (!agentForm.memory) return;
+    const safeName = (agentForm.name || "agent").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
+    const content = [
+      `# ${agentForm.name} — Memory File`,
+      `# Updated: ${new Date().toISOString()}`,
+      `# Role: ${agentForm.role || ""}`,
+      ``,
+      agentForm.memory,
+    ].join("\n");
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${safeName}.memory`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     await onSave(form);
+    downloadMemoryFile(form);
     setSaving(false);
   };
 
@@ -138,6 +158,16 @@ export default function AgentProfile({ agent, onClose, onSave }) {
             >
               <Download className="w-3.5 h-3.5" />
               .skills
+            </button>
+            <button
+              onClick={() => downloadMemoryFile(form)}
+              disabled={!form.memory}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors disabled:opacity-30"
+              style={{ border: "1px solid #20242C" }}
+              title="Download .memory file"
+            >
+              <Download className="w-3.5 h-3.5" />
+              .memory
             </button>
             <button
               data-testid="save-agent-btn"
