@@ -1,0 +1,37 @@
+{
+  "name": "Auto-Sync Agent to Superagent",
+  "description": "Automatically syncs Agent changes to the linked Superagent. Skips when is_syncing=true to prevent infinite loops.",
+  "trigger": {
+    "condition": "${ (.trigger.data.is_syncing != true) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "Agent"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_sync_agent_to_superagent",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncAgentToSuperagent",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "syncAgentToSuperagent"
+  }
+}
