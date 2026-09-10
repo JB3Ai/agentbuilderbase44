@@ -16,6 +16,7 @@ import TaskTracker from "@/components/agents/TaskTracker";
 import TaskPipeline from "@/components/agents/TaskPipeline";
 import CreditTierDashboard from "@/components/agents/CreditTierDashboard";
 import AgentDataTable from "@/components/agents/AgentDataTable";
+import DemoBanner from "@/components/agents/DemoBanner";
 
 const SEED_AGENTS = [
   {
@@ -415,6 +416,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen">
+      <DemoBanner />
       <Header onQuickCommand={() => setShowCreator(true)} onOpenSettings={() => setShowSettings(true)} />
 
       <main className="max-w-7xl mx-auto px-6 py-8">

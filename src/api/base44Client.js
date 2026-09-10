@@ -1,5 +1,6 @@
 import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
+import { applyDemoMode } from '@/lib/demo-mode';
 
 const { appId, token, functionsVersion, appBaseUrl } = appParams;
 
@@ -11,3 +12,6 @@ export const base44 = createClient({
   requiresAuth: false,
   appBaseUrl
 });
+
+// In demo mode (?demo=1), all entity writes are intercepted and never persisted
+applyDemoMode(base44);
