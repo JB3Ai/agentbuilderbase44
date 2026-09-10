@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, X, Mail } from "lucide-react";
+import { Eye, X } from "lucide-react";
 import { isDemoMode } from "@/lib/demo-mode";
 
 const DISMISS_KEY = "jb3ai_disclaimer_dismissed";

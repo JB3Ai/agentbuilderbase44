@@ -17,6 +17,7 @@ import TaskPipeline from "@/components/agents/TaskPipeline";
 import CreditTierDashboard from "@/components/agents/CreditTierDashboard";
 import AgentDataTable from "@/components/agents/AgentDataTable";
 import DemoBanner from "@/components/agents/DemoBanner";
+import DemoDisclaimer from "@/components/agents/DemoDisclaimer";
 
 const SEED_AGENTS = [
   {
