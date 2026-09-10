@@ -417,6 +417,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen">
       <DemoBanner />
+      <DemoDisclaimer />
       <Header onQuickCommand={() => setShowCreator(true)} onOpenSettings={() => setShowSettings(true)} />
 
       <main className="max-w-7xl mx-auto px-6 py-8">

@@ -13,7 +13,8 @@ export default function DemoBanner() {
     >
       <Eye className="w-3.5 h-3.5 text-[#F59E0B] flex-shrink-0" />
       <span className="text-xs text-slate-300 text-center">
-        <b className="text-[#F59E0B]">DEMO MODE</b> — you're exploring a live preview. Nothing you click, edit, or create will be saved.
+        <b className="text-[#F59E0B]">DEMO MODE</b> — you're exploring a live preview. Nothing you click, edit, or create will be saved. Contact{" "}
+        <a href="mailto:hi@jb3ai.com" className="text-[#F59E0B] hover:text-white transition-colors underline underline-offset-2">hi@jb3ai.com</a> for more details.
       </span>
       <button
         onClick={exitDemoMode}
